@@ -69,7 +69,6 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       originalUrl: updatedLink.original_url,
       shortCode: updatedLink.short_code,
       shortUrl: `${request.nextUrl.origin}/s/${updatedLink.short_code}`,
-      clicks: updatedLink.clicks,
       isActive: updatedLink.is_active,
       createdAt: updatedLink.created_at,
       updatedAt: updatedLink.updated_at,

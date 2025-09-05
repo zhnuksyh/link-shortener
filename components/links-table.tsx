@@ -23,6 +23,7 @@ import {
   Copy,
   ExternalLink,
   MoreHorizontal,
+  Power,
   Search,
   Trash2,
 } from "lucide-react";
@@ -108,10 +109,9 @@ export function LinksTable({
               <TableHeader>
                 <TableRow>
                   <TableHead>Original URL</TableHead>
-                  <TableHead>Short Code</TableHead>
-                  <TableHead>Clicks</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Created</TableHead>
+                  <TableHead className="text-center">Short Code</TableHead>
+                  <TableHead className="text-center">Status</TableHead>
+                  <TableHead className="text-center">Created</TableHead>
                   <TableHead className="w-[50px]"></TableHead>
                 </TableRow>
               </TableHeader>
@@ -128,24 +128,23 @@ export function LinksTable({
                         </p>
                       </div>
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="text-center">
                       <span className="text-sm bg-muted/50 px-2 py-1 rounded">
                         {link.shortCode}
                       </span>
                     </TableCell>
-                    <TableCell>
-                      <span className="font-medium">{link.clicks}</span>
-                    </TableCell>
-                    <TableCell>
+                    <TableCell className="text-center">
                       <Badge
-                        variant={
-                          link.isActive !== false ? "default" : "secondary"
+                        className={
+                          link.isActive !== false
+                            ? "bg-green-100 text-green-800 border-green-200 hover:bg-green-200"
+                            : "bg-gray-900 text-white border-gray-900 hover:bg-gray-800"
                         }
                       >
                         {link.isActive !== false ? "Active" : "Inactive"}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-sm text-muted-foreground">
+                    <TableCell className="text-center text-sm text-muted-foreground">
                       {formatDate(link.createdAt)}
                     </TableCell>
                     <TableCell>
@@ -180,6 +179,7 @@ export function LinksTable({
                             }
                             className="cursor-pointer"
                           >
+                            <Power className="mr-2 h-4 w-4" />
                             {link.isActive !== false
                               ? "Deactivate"
                               : "Activate"}

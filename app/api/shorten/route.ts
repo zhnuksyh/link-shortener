@@ -1,10 +1,24 @@
 import { isValidUrl, normalizeUrl } from "@/lib/utils/url-validator"
 import { createTinyURL } from "@/lib/services/tinyurl"
+import { createClient } from "@/lib/supabase/server"
 import { type NextRequest, NextResponse } from "next/server"
 
 export async function POST(request: NextRequest) {
   try {
-    const { originalUrl, customAlias } = await request.json()
+    const supabase = await createClient()
+
+    // Check if user is authenticated
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser()
+    if (authError || !user) {
+      return NextResponse.json({ 
+        error: "Please create an account to shorten links and track analytics" 
+      }, { status: 401 })
+    }
+
+    const { originalUrl } = await request.json()
 
     if (!originalUrl) {
       return NextResponse.json({ error: "Original URL is required" }, { status: 400 })
@@ -18,13 +32,12 @@ export async function POST(request: NextRequest) {
     const normalizedUrl = normalizeUrl(originalUrl)
 
     try {
-      const { shortUrl, alias } = await createTinyURL(normalizedUrl, customAlias)
+      const { shortUrl, alias } = await createTinyURL(normalizedUrl)
 
       return NextResponse.json({
         originalUrl: normalizedUrl,
         shortCode: alias,
         shortUrl: shortUrl,
-        clicks: 0,
         createdAt: new Date().toISOString(),
       })
     } catch (tinyUrlError) {

@@ -3,7 +3,6 @@ export interface Link {
   originalUrl: string
   shortCode: string
   shortUrl: string
-  clicks: number
   isActive?: boolean
   createdAt: string
   updatedAt?: string
@@ -11,7 +10,6 @@ export interface Link {
 
 export interface CreateLinkRequest {
   originalUrl: string
-  customAlias?: string
 }
 
 export interface CreateLinkResponse {
@@ -19,7 +17,6 @@ export interface CreateLinkResponse {
   originalUrl: string
   shortCode: string
   shortUrl: string
-  clicks: number
   createdAt: string
 }
 

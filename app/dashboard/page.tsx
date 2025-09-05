@@ -9,7 +9,7 @@ import { UrlShortenerForm } from "@/components/url-shortener-form";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
-import { Link2, BarChart3, MousePointer } from "lucide-react";
+import { Link2, BarChart3 } from "lucide-react";
 import type { Link, GetLinksResponse } from "@/types/link";
 
 export default function DashboardPage() {
@@ -18,7 +18,6 @@ export default function DashboardPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [stats, setStats] = useState({
     totalLinks: 0,
-    totalClicks: 0,
     activeLinks: 0,
   });
   const { toast } = useToast();
@@ -57,17 +56,12 @@ export default function DashboardPage() {
       setLinks(data.links);
 
       // Calculate stats
-      const totalClicks = data.links.reduce(
-        (sum, link) => sum + link.clicks,
-        0
-      );
       const activeLinks = data.links.filter(
-        (link) => link.isActive !== false
+        (link) => link.isActive === true
       ).length;
 
       setStats({
         totalLinks: data.links.length,
-        totalClicks,
         activeLinks,
       });
     } catch (error) {
@@ -177,24 +171,12 @@ export default function DashboardPage() {
           </div>
 
           {/* Stats Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <LinkStatsCard
               title="Total Links"
               value={stats.totalLinks}
               description="Links you've created"
-              icon={
-                <img
-                  src="/knucklelink-logo.png"
-                  alt="KnuckleLink"
-                  className="h-4 w-4"
-                />
-              }
-            />
-            <LinkStatsCard
-              title="Total Clicks"
-              value={stats.totalClicks}
-              description="Across all your links"
-              icon={<MousePointer className="h-4 w-4" />}
+              icon={<Link2 className="h-4 w-4" />}
             />
             <LinkStatsCard
               title="Active Links"

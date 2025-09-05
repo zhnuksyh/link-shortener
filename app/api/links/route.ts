@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const { originalUrl, customAlias } = await request.json()
+    const { originalUrl } = await request.json()
 
     if (!originalUrl) {
       return NextResponse.json({ error: "Original URL is required" }, { status: 400 })
@@ -45,31 +45,20 @@ export async function POST(request: NextRequest) {
         originalUrl: existingLink.original_url,
         shortCode: existingLink.tinyurl_alias || existingLink.short_code,
         shortUrl: existingLink.external_short_url || `${request.nextUrl.origin}/s/${existingLink.short_code}`,
-        clicks: existingLink.clicks,
         createdAt: existingLink.created_at,
       })
     }
 
     try {
-      const { shortUrl, alias } = await createTinyURL(normalizedUrl, customAlias)
+      const { shortUrl, alias } = await createTinyURL(normalizedUrl)
 
-      // Generate a unique short code for internal tracking (required by database schema)
-      const shortCode = await generateUniqueShortCode(async (code: string) => {
-        const { data } = await supabase
-          .from("links")
-          .select("id")
-          .eq("short_code", code)
-          .single()
-        return !!data
-      })
-
-      // Create new shortened link with TinyURL data
+      // Create new shortened link with our own domain
       const { data: newLink, error: insertError } = await supabase
         .from("links")
         .insert({
           original_url: normalizedUrl,
-          short_code: shortCode, // Required by database schema
-          tinyurl_alias: alias,
+          short_code: alias, // Use the generated short code
+          tinyurl_alias: alias, // Keep for compatibility
           external_short_url: shortUrl,
           user_id: user.id,
         })
@@ -86,7 +75,6 @@ export async function POST(request: NextRequest) {
         originalUrl: newLink.original_url,
         shortCode: newLink.tinyurl_alias,
         shortUrl: newLink.external_short_url,
-        clicks: newLink.clicks,
         createdAt: newLink.created_at,
       })
     } catch (tinyUrlError) {
@@ -122,12 +110,11 @@ export async function GET(request: NextRequest) {
     const limit = Number.parseInt(searchParams.get("limit") || "10")
     const offset = (page - 1) * limit
 
-    // Get user's links with pagination
+    // Get user's links with pagination (all links, not just active ones)
     const { data: links, error: fetchError } = await supabase
       .from("links")
       .select("*")
       .eq("user_id", user.id)
-      .eq("is_active", true)
       .order("created_at", { ascending: false })
       .range(offset, offset + limit - 1)
 
@@ -136,19 +123,18 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Failed to fetch links" }, { status: 500 })
     }
 
-    // Get total count for pagination
+    // Get total count for pagination (all links, not just active ones)
     const { count } = await supabase
       .from("links")
       .select("*", { count: "exact", head: true })
       .eq("user_id", user.id)
-      .eq("is_active", true)
 
     const formattedLinks = links.map((link) => ({
       id: link.id,
       originalUrl: link.original_url,
       shortCode: link.tinyurl_alias || link.short_code,
       shortUrl: link.external_short_url || `${request.nextUrl.origin}/s/${link.short_code}`,
-      clicks: link.clicks,
+      isActive: link.is_active,
       createdAt: link.created_at,
       updatedAt: link.updated_at,
     }))

@@ -1,42 +1,23 @@
-export async function createTinyURL(originalUrl: string, alias?: string): Promise<{ shortUrl: string; alias: string }> {
+export async function createTinyURL(originalUrl: string): Promise<{ shortUrl: string; alias: string }> {
   try {
-    // Using the simple TinyURL API that doesn't require authentication
-    // Use HTTPS for better security and compatibility
-    const apiUrl = `https://tinyurl.com/api-create.php?url=${encodeURIComponent(originalUrl)}`
-
-    console.log('TinyURL API request:', apiUrl)
-
-    const response = await fetch(apiUrl, {
-      method: "GET",
-      headers: {
-        'User-Agent': 'LinkShortener/1.0',
-      },
-    })
-
-    console.log('TinyURL API response status:', response.status)
-
-    if (!response.ok) {
-      throw new Error(`TinyURL API error: ${response.status} ${response.statusText}`)
+    // Generate a random short code for our own domain
+    const characters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
+    let shortCode = ''
+    for (let i = 0; i < 7; i++) {
+      shortCode += characters.charAt(Math.floor(Math.random() * characters.length))
     }
 
-    const shortUrl = await response.text()
-    console.log('TinyURL API response:', shortUrl)
-
-    if (!shortUrl || shortUrl.includes('error')) {
-      throw new Error('TinyURL API returned an error response')
-    }
-
-    // Extract the alias from the shortened URL (everything after the last /)
-    const urlParts = shortUrl.split("/")
-    const generatedAlias = urlParts[urlParts.length - 1]
+    // Use our own domain for click tracking
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
+    const shortUrl = `${baseUrl}/s/${shortCode}`
 
     return {
-      shortUrl: shortUrl.trim(),
-      alias: alias || generatedAlias,
+      shortUrl: shortUrl,
+      alias: shortCode,
     }
   } catch (error) {
-    console.error("TinyURL API error:", error)
-    throw new Error("Failed to create shortened URL with TinyURL")
+    console.error("Short URL generation error:", error)
+    throw new Error("Failed to create shortened URL")
   }
 }
 
