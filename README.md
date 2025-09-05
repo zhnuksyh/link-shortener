@@ -1,12 +1,12 @@
 # KnuckleLink
 
-A modern, full-stack link shortening application built with Next.js, Supabase, and TinyURL API. Create short, shareable links with click tracking and analytics.
+A modern, full-stack link shortening application built with Next.js and Supabase. Create short, shareable links with user authentication and link management.
 
 ## Features
 
-- 🔗 **Instant Link Shortening**: Convert long URLs to short, memorable links using TinyURL API
-- 📊 **Click Analytics**: Track how many times your links are clicked
+- 🔗 **Instant Link Shortening**: Convert long URLs to short, memorable links
 - 👤 **User Authentication**: Secure user accounts with Supabase Auth
+- 📋 **Link Management**: View, activate, and deactivate your shortened links
 - 🎨 **Modern UI**: Beautiful, responsive interface built with Tailwind CSS and shadcn/ui
 - 🚀 **Fast & Reliable**: Built with Next.js 15 and optimized for performance
 - 📱 **Mobile Friendly**: Responsive design that works on all devices
@@ -18,7 +18,7 @@ A modern, full-stack link shortening application built with Next.js, Supabase, a
 - **Backend**: Next.js API Routes
 - **Database**: Supabase (PostgreSQL)
 - **Authentication**: Supabase Auth
-- **Link Shortening**: TinyURL API
+- **Link Shortening**: Custom short code generation
 - **Deployment**: Vercel (recommended)
 
 ## Getting Started

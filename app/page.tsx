@@ -15,14 +15,14 @@ export default async function HomePage() {
       <main className="flex-1 flex items-center justify-center px-4">
         <div className="w-full max-w-6xl">
           {/* Hero Section - Full width centered */}
-          <div className="w-full text-center space-y-8 mb-12">
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-foreground tracking-tight text-center">
+          <div className="w-full text-center space-y-16 mb-12 -mt-16">
+            <h1 className="text-5xl sm:text-6xl lg:text-7xl xl:text-8xl font-bold text-foreground tracking-tight text-center">
               Shorten your links, <br />
               <span className="text-primary">Amplify your reach</span>
             </h1>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed text-center">
               Transform long, unwieldy URLs into clean, shareable links. <br />
-              Track clicks, manage your links, and make every share count.
+              Manage your links and make every share count.
             </p>
           </div>
 
