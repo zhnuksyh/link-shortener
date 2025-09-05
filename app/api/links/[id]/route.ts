@@ -15,10 +15,10 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    // Soft delete the link (set is_active to false)
+    // Hard delete the link (remove from database)
     const { error: deleteError } = await supabase
       .from("links")
-      .update({ is_active: false })
+      .delete()
       .eq("id", id)
       .eq("user_id", user.id)
 
@@ -27,7 +27,7 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
       return NextResponse.json({ error: "Failed to delete link" }, { status: 500 })
     }
 
-    return NextResponse.json({ message: "Link deleted successfully" })
+    return NextResponse.json({ message: "Link permanently deleted" })
   } catch (error) {
     console.error("API error:", error)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })

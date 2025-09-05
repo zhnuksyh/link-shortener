@@ -87,14 +87,14 @@ export default function DashboardPage() {
 
       toast({
         title: "Success",
-        description: "Link deleted successfully",
+        description: "Link permanently deleted",
       });
 
       await fetchLinks();
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to delete link",
+        description: "Failed to permanently delete link",
         variant: "destructive",
       });
     }

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
 import "./globals.css";
+import { Toaster } from "@/components/ui/toaster";
 
 export const metadata: Metadata = {
   title: "KnuckleLink",
@@ -45,7 +46,10 @@ html {
 }
         `}</style>
       </head>
-      <body className="thin-scrollbar">{children}</body>
+      <body className="thin-scrollbar">
+        {children}
+        <Toaster />
+      </body>
     </html>
   );
 }
