@@ -14,42 +14,41 @@ export function SiteHeader({
 }: SiteHeaderProps) {
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-16 items-center relative">
-        <Link
-          href="/"
-          className="flex items-center space-x-2 absolute left-1/2 transform -translate-x-1/2"
-        >
-          <img
-            src="/knucklelink-logo.png"
-            alt="KnuckleLink"
-            className="h-8 w-8"
-          />
-          <span className="font-semibold text-xl text-foreground">
-            KnuckleLink
-          </span>
-        </Link>
+      <div className="w-full flex h-16 items-center justify-center px-4">
+        <div className="flex items-center justify-between w-full max-w-6xl">
+          <Link href="/" className="flex items-center space-x-2">
+            <img
+              src="/knucklelink-logo.png"
+              alt="KnuckleLink"
+              className="h-8 w-8"
+            />
+            <span className="font-semibold text-xl text-foreground">
+              KnuckleLink
+            </span>
+          </Link>
 
-        <nav className="flex items-center space-x-4 ml-auto">
-          {isAuthenticated ? (
-            <>
-              <Button variant="ghost" asChild>
-                <Link href="/dashboard">Dashboard</Link>
-              </Button>
-              <Button variant="outline" asChild>
-                <Link href="/auth/logout">Sign out</Link>
-              </Button>
-            </>
-          ) : (
-            <>
-              <Button variant="ghost" asChild>
-                <Link href="/auth/login">Sign in</Link>
-              </Button>
-              <Button asChild>
-                <Link href="/auth/sign-up">Sign up</Link>
-              </Button>
-            </>
-          )}
-        </nav>
+          <nav className="flex items-center space-x-4">
+            {isAuthenticated ? (
+              <>
+                <Button variant="ghost" asChild>
+                  <Link href="/dashboard">Dashboard</Link>
+                </Button>
+                <Button variant="outline" asChild>
+                  <Link href="/auth/logout">Sign out</Link>
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button variant="ghost" asChild>
+                  <Link href="/auth/login">Sign in</Link>
+                </Button>
+                <Button asChild>
+                  <Link href="/auth/sign-up">Sign up</Link>
+                </Button>
+              </>
+            )}
+          </nav>
+        </div>
       </div>
     </header>
   );

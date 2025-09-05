@@ -141,13 +141,15 @@ export default function DashboardPage() {
     return (
       <div className="min-h-screen bg-background thin-scrollbar">
         <SiteHeader isAuthenticated={true} userEmail={user?.email} />
-        <main className="container mx-auto px-4 py-8">
-          <div className="flex items-center justify-center min-h-[400px]">
-            <div className="text-center">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-              <p className="mt-4 text-muted-foreground">
-                Loading your dashboard...
-              </p>
+        <main className="w-full flex justify-center px-4 py-8">
+          <div className="w-full max-w-6xl">
+            <div className="flex items-center justify-center min-h-[400px]">
+              <div className="text-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+                <p className="mt-4 text-muted-foreground">
+                  Loading your dashboard...
+                </p>
+              </div>
             </div>
           </div>
         </main>
@@ -159,62 +161,64 @@ export default function DashboardPage() {
     <div className="min-h-screen bg-background thin-scrollbar">
       <SiteHeader isAuthenticated={true} userEmail={user?.email} />
 
-      <main className="container mx-auto px-4 py-8 space-y-8">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
-            <p className="text-muted-foreground mt-1">
-              Manage your shortened links and view analytics
-            </p>
+      <main className="w-full flex justify-center px-4 py-8">
+        <div className="w-full max-w-6xl space-y-8">
+          {/* Header */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
+              <p className="text-muted-foreground mt-1">
+                Manage your shortened links and view analytics
+              </p>
+            </div>
+            <Button onClick={() => window.location.reload()} variant="outline">
+              Refresh
+            </Button>
           </div>
-          <Button onClick={() => window.location.reload()} variant="outline">
-            Refresh
-          </Button>
-        </div>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <LinkStatsCard
-            title="Total Links"
-            value={stats.totalLinks}
-            description="Links you've created"
-            icon={
-              <img
-                src="/knucklelink-logo.png"
-                alt="KnuckleLink"
-                className="h-4 w-4"
-              />
-            }
-          />
-          <LinkStatsCard
-            title="Total Clicks"
-            value={stats.totalClicks}
-            description="Across all your links"
-            icon={<MousePointer className="h-4 w-4" />}
-          />
-          <LinkStatsCard
-            title="Active Links"
-            value={stats.activeLinks}
-            description="Currently working links"
-            icon={<BarChart3 className="h-4 w-4" />}
+          {/* Stats Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <LinkStatsCard
+              title="Total Links"
+              value={stats.totalLinks}
+              description="Links you've created"
+              icon={
+                <img
+                  src="/knucklelink-logo.png"
+                  alt="KnuckleLink"
+                  className="h-4 w-4"
+                />
+              }
+            />
+            <LinkStatsCard
+              title="Total Clicks"
+              value={stats.totalClicks}
+              description="Across all your links"
+              icon={<MousePointer className="h-4 w-4" />}
+            />
+            <LinkStatsCard
+              title="Active Links"
+              value={stats.activeLinks}
+              description="Currently working links"
+              icon={<BarChart3 className="h-4 w-4" />}
+            />
+          </div>
+
+          {/* Quick Shorten */}
+          <div className="space-y-4">
+            <h2 className="text-xl font-semibold text-foreground text-center">
+              Create New Link
+            </h2>
+            <UrlShortenerForm isAuthenticated={true} />
+          </div>
+
+          {/* Links Table */}
+          <LinksTable
+            links={links}
+            onDelete={handleDeleteLink}
+            onToggleStatus={handleToggleStatus}
           />
         </div>
-
-        {/* Quick Shorten */}
-        <div className="space-y-4">
-          <h2 className="text-xl font-semibold text-foreground text-center">
-            Create New Link
-          </h2>
-          <UrlShortenerForm isAuthenticated={true} />
-        </div>
-
-        {/* Links Table */}
-        <LinksTable
-          links={links}
-          onDelete={handleDeleteLink}
-          onToggleStatus={handleToggleStatus}
-        />
       </main>
     </div>
   );

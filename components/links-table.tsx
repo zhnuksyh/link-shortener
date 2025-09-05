@@ -123,15 +123,15 @@ export function LinksTable({
                         <p className="font-medium text-sm">
                           {truncateUrl(link.originalUrl)}
                         </p>
-                        <p className="text-xs text-muted-foreground font-mono">
+                        <p className="text-xs text-muted-foreground">
                           {link.shortUrl}
                         </p>
                       </div>
                     </TableCell>
                     <TableCell>
-                      <code className="text-sm font-mono bg-muted/50 px-2 py-1 rounded">
+                      <span className="text-sm bg-muted/50 px-2 py-1 rounded">
                         {link.shortCode}
-                      </code>
+                      </span>
                     </TableCell>
                     <TableCell>
                       <span className="font-medium">{link.clicks}</span>
