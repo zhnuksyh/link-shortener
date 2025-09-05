@@ -1,4 +1,4 @@
-# Link Shortener
+# KnuckleLink
 
 A modern, full-stack link shortening application built with Next.js, Supabase, and TinyURL API. Create short, shareable links with click tracking and analytics.
 
@@ -33,7 +33,7 @@ A modern, full-stack link shortening application built with Next.js, Supabase, a
 
 ```bash
 git clone <your-repo-url>
-cd link-shortener
+cd knucklelink
 ```
 
 ### 2. Install Dependencies
