@@ -6,7 +6,22 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
-import { Copy, ExternalLink, Loader2 } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  Copy,
+  ExternalLink,
+  Loader2,
+  Share2,
+  MessageCircle,
+  Mail,
+  Twitter,
+} from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { CreateLinkResponse } from "@/types/link";
 
@@ -22,6 +37,8 @@ export function UrlShortenerForm({
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<CreateLinkResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [showCopySuccess, setShowCopySuccess] = useState(false);
+  const [showShareDialog, setShowShareDialog] = useState(false);
   const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -66,16 +83,51 @@ export function UrlShortenerForm({
   const copyToClipboard = async (text: string) => {
     try {
       await navigator.clipboard.writeText(text);
-      toast({
-        title: "Copied!",
-        description: "Short URL copied to clipboard",
-      });
+      setShowCopySuccess(true);
+      setTimeout(() => setShowCopySuccess(false), 2000);
     } catch (error) {
       toast({
         title: "Failed to copy",
         description: "Please copy the URL manually",
         variant: "destructive",
       });
+    }
+  };
+
+  const shareToWhatsApp = (url: string) => {
+    const message = `Check out this link: ${url}`;
+    const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
+    window.open(whatsappUrl, "_blank");
+  };
+
+  const shareToEmail = (url: string) => {
+    const subject = "Check out this link";
+    const body = `I thought you might be interested in this link: ${url}`;
+    const mailtoUrl = `mailto:?subject=${encodeURIComponent(
+      subject
+    )}&body=${encodeURIComponent(body)}`;
+    window.location.href = mailtoUrl;
+  };
+
+  const shareToTwitter = (url: string) => {
+    const text = `Check out this link: ${url}`;
+    const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(
+      text
+    )}`;
+    window.open(twitterUrl, "_blank");
+  };
+
+  const shareViaWebAPI = async (url: string) => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: "Check out this link",
+          text: "I thought you might be interested in this link",
+          url: url,
+        });
+      } catch (error) {
+        console.log("Error sharing:", error);
+      }
     }
   };
 
@@ -135,7 +187,7 @@ export function UrlShortenerForm({
       {result && (
         <Card className="border-border/50 shadow-sm">
           <CardContent className="p-6 space-y-4">
-            <div className="space-y-2">
+            <div className="space-y-2 text-center">
               <p className="text-sm font-medium text-muted-foreground">
                 Original URL
               </p>
@@ -143,31 +195,110 @@ export function UrlShortenerForm({
                 {result.originalUrl}
               </p>
             </div>
-            <div className="space-y-3">
+            <div className="space-y-3 text-center">
               <p className="text-sm font-medium text-muted-foreground">
                 Shortened URL
               </p>
-              <div className="flex items-center gap-2 p-3 bg-muted/30 rounded-md">
-                <code className="flex-1 text-sm font-mono text-primary break-all">
-                  {result.shortUrl}
-                </code>
-                <div className="flex gap-1">
+              <div className="space-y-3">
+                <div className="p-3 bg-muted/30 rounded-md">
+                  <span className="text-sm text-primary break-all">
+                    {result.shortUrl}
+                  </span>
+                </div>
+                <div className="flex justify-center gap-3">
                   <Button
-                    variant="ghost"
+                    type="button"
+                    variant="outline"
                     size="sm"
                     onClick={() => copyToClipboard(result.shortUrl)}
-                    className="h-8 w-8 p-0"
+                    className="h-9 px-4 cursor-pointer relative"
+                    disabled={false}
                   >
-                    <Copy className="h-4 w-4" />
+                    <Copy className="h-4 w-4 mr-2" />
+                    Copy
+                    {showCopySuccess && (
+                      <div className="absolute -top-10 left-1/2 transform -translate-x-1/2 bg-green-500 text-white text-xs px-2 py-1 rounded shadow-lg whitespace-nowrap">
+                        Link copied to clipboard!
+                      </div>
+                    )}
                   </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => window.open(result.shortUrl, "_blank")}
-                    className="h-8 w-8 p-0"
+
+                  <Dialog
+                    open={showShareDialog}
+                    onOpenChange={setShowShareDialog}
                   >
-                    <ExternalLink className="h-4 w-4" />
-                  </Button>
+                    <DialogTrigger asChild>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="h-9 px-4 cursor-pointer"
+                      >
+                        <Share2 className="h-4 w-4 mr-2" />
+                        Share
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-lg">
+                      <DialogHeader>
+                        <DialogTitle>Share Link</DialogTitle>
+                      </DialogHeader>
+                      <div className="space-y-6">
+                        <div className="p-4 bg-muted/30 rounded-lg">
+                          <span className="text-sm text-primary break-all">
+                            {result.shortUrl}
+                          </span>
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                          <Button
+                            variant="outline"
+                            onClick={() => {
+                              shareToWhatsApp(result.shortUrl);
+                              setShowShareDialog(false);
+                            }}
+                            className="h-20 flex flex-col items-center justify-center gap-3 py-6 px-4 hover:bg-green-50 hover:border-green-200 transition-colors"
+                          >
+                            <MessageCircle className="h-6 w-6 text-green-600" />
+                            <span className="text-sm font-medium">
+                              WhatsApp
+                            </span>
+                          </Button>
+                          <Button
+                            variant="outline"
+                            onClick={() => {
+                              shareToEmail(result.shortUrl);
+                              setShowShareDialog(false);
+                            }}
+                            className="h-20 flex flex-col items-center justify-center gap-3 py-6 px-4 hover:bg-blue-50 hover:border-blue-200 transition-colors"
+                          >
+                            <Mail className="h-6 w-6 text-blue-600" />
+                            <span className="text-sm font-medium">Email</span>
+                          </Button>
+                          <Button
+                            variant="outline"
+                            onClick={() => {
+                              shareToTwitter(result.shortUrl);
+                              setShowShareDialog(false);
+                            }}
+                            className="h-20 flex flex-col items-center justify-center gap-3 py-6 px-4 hover:bg-sky-50 hover:border-sky-200 transition-colors"
+                          >
+                            <Twitter className="h-6 w-6 text-sky-600" />
+                            <span className="text-sm font-medium">X</span>
+                          </Button>
+                          <Button
+                            variant="outline"
+                            onClick={() => {
+                              shareViaWebAPI(result.shortUrl);
+                              setShowShareDialog(false);
+                            }}
+                            className="h-20 flex flex-col items-center justify-center gap-3 py-6 px-4 hover:bg-purple-50 hover:border-purple-200 transition-colors"
+                          >
+                            <Share2 className="h-6 w-6 text-purple-600" />
+                            <span className="text-sm font-medium">More</span>
+                          </Button>
+                        </div>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
                 </div>
               </div>
             </div>

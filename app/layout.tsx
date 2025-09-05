@@ -7,6 +7,11 @@ export const metadata: Metadata = {
   title: "KnuckleLink",
   description: "Shorten your links, amplify your reach",
   generator: "KnuckleLink",
+  icons: {
+    icon: "/knucklelink-logo.png",
+    shortcut: "/knucklelink-logo.png",
+    apple: "/knucklelink-logo.png",
+  },
 };
 
 export default function RootLayout({
@@ -17,6 +22,21 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
+        <link rel="icon" href="/knucklelink-logo.png" sizes="any" />
+        <link
+          rel="icon"
+          href="/knucklelink-logo.png"
+          sizes="16x16"
+          type="image/png"
+        />
+        <link
+          rel="icon"
+          href="/knucklelink-logo.png"
+          sizes="32x32"
+          type="image/png"
+        />
+        <link rel="apple-touch-icon" href="/knucklelink-logo.png" />
+        <link rel="manifest" href="/site.webmanifest" />
         <style>{`
 html {
   font-family: ${GeistSans.style.fontFamily};
@@ -25,7 +45,7 @@ html {
 }
         `}</style>
       </head>
-      <body>{children}</body>
+      <body className="thin-scrollbar">{children}</body>
     </html>
   );
 }

@@ -1,89 +1,193 @@
 "use client";
 
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card, CardContent } from "@/components/ui/card";
+import { SiteHeader } from "@/components/site-header";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ThinScrollArea } from "@/components/ui/thin-scroll-area";
+import { ThinScroller } from "@/components/ui/thin-scroller";
 
 export default function TestPage() {
-  const [url, setUrl] = useState("");
-  const [result, setResult] = useState<any>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const sampleContent = Array.from({ length: 50 }, (_, i) => (
+    <div key={i} className="p-4 border-b border-border/50">
+      <h3 className="font-semibold">Item {i + 1}</h3>
+      <p className="text-sm text-muted-foreground">
+        This is sample content to demonstrate the thin scroller. Lorem ipsum
+        dolor sit amet, consectetur adipiscing elit.
+      </p>
+    </div>
+  ));
 
-  const testTinyURL = async () => {
-    if (!url.trim()) return;
-
-    setIsLoading(true);
-    setError(null);
-    setResult(null);
-
-    try {
-      const response = await fetch("/api/shorten", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          originalUrl: url.trim(),
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || "Failed to shorten URL");
-      }
-
-      setResult(data);
-    } catch (error) {
-      setError(error instanceof Error ? error.message : "An error occurred");
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const wideContent = Array.from({ length: 20 }, (_, i) => (
+    <div
+      key={i}
+      className="inline-block w-64 p-4 border border-border/50 rounded mr-4"
+    >
+      <h3 className="font-semibold">Wide Item {i + 1}</h3>
+      <p className="text-sm text-muted-foreground">
+        Horizontal scrolling content
+      </p>
+    </div>
+  ));
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold mb-6">API Test Page</h1>
+    <div className="min-h-screen bg-background thin-scrollbar">
+      <SiteHeader isAuthenticated={false} />
 
-      <Card className="max-w-md">
-        <CardContent className="p-6 space-y-4">
-          <div>
-            <label className="text-sm font-medium">Test URL:</label>
-            <Input
-              type="url"
-              placeholder="https://example.com"
-              value={url}
-              onChange={(e) => setUrl(e.target.value)}
-              className="mt-1"
-            />
-          </div>
+      <main className="container mx-auto px-4 py-8 space-y-8">
+        <div>
+          <h1 className="text-3xl font-bold text-foreground">
+            Thin Scroller Demo
+          </h1>
+          <p className="text-muted-foreground mt-1">
+            Different variants of the custom thin scroller
+          </p>
+        </div>
 
-          <Button
-            onClick={testTinyURL}
-            disabled={isLoading || !url.trim()}
-            className="w-full"
-          >
-            {isLoading ? "Testing..." : "Test TinyURL API"}
-          </Button>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Default Thin Scroller */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Default Thin Scroller</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ThinScroller
+                variant="default"
+                className="h-64 border border-border/50 rounded"
+              >
+                {sampleContent}
+              </ThinScroller>
+            </CardContent>
+          </Card>
 
-          {error && (
-            <div className="p-3 bg-red-50 border border-red-200 rounded">
-              <p className="text-sm text-red-600">{error}</p>
+          {/* Ultra Thin Scroller */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Ultra Thin Scroller</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ThinScroller
+                variant="ultra-thin"
+                className="h-64 border border-border/50 rounded"
+              >
+                {sampleContent}
+              </ThinScroller>
+            </CardContent>
+          </Card>
+
+          {/* Auto Hide Scroller */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Auto Hide Scroller</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ThinScroller
+                variant="auto-hide"
+                className="h-64 border border-border/50 rounded"
+              >
+                {sampleContent}
+              </ThinScroller>
+            </CardContent>
+          </Card>
+
+          {/* Accent Scroller */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Accent Scroller</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ThinScroller
+                variant="accent"
+                className="h-64 border border-border/50 rounded"
+              >
+                {sampleContent}
+              </ThinScroller>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Horizontal Scrolling Demo */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Horizontal Scrolling</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ThinScroller
+              variant="default"
+              className="h-32 border border-border/50 rounded overflow-x-auto"
+            >
+              <div className="flex">{wideContent}</div>
+            </ThinScroller>
+          </CardContent>
+        </Card>
+
+        {/* Radix ScrollArea Demo */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Radix ScrollArea with Thin Scrollbar</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ThinScrollArea
+              variant="default"
+              className="h-64 border border-border/50 rounded"
+            >
+              {sampleContent}
+            </ThinScrollArea>
+          </CardContent>
+        </Card>
+
+        {/* Usage Instructions */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Usage Instructions</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <h3 className="font-semibold">CSS Classes:</h3>
+              <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
+                <li>
+                  <code className="bg-muted px-1 rounded">thin-scrollbar</code>{" "}
+                  - Default thin scrollbar (6px)
+                </li>
+                <li>
+                  <code className="bg-muted px-1 rounded">
+                    ultra-thin-scrollbar
+                  </code>{" "}
+                  - Ultra thin scrollbar (4px)
+                </li>
+                <li>
+                  <code className="bg-muted px-1 rounded">
+                    auto-hide-scrollbar
+                  </code>{" "}
+                  - Hidden scrollbar
+                </li>
+                <li>
+                  <code className="bg-muted px-1 rounded">
+                    accent-scrollbar
+                  </code>{" "}
+                  - Primary color scrollbar
+                </li>
+                <li>
+                  <code className="bg-muted px-1 rounded">smooth-scroll</code> -
+                  Smooth scrolling behavior
+                </li>
+              </ul>
             </div>
-          )}
 
-          {result && (
-            <div className="p-3 bg-green-50 border border-green-200 rounded">
-              <p className="text-sm font-medium text-green-800">Success!</p>
-              <p className="text-sm text-green-700 mt-1">
-                Short URL: {result.shortUrl}
-              </p>
+            <div>
+              <h3 className="font-semibold">React Components:</h3>
+              <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
+                <li>
+                  <code className="bg-muted px-1 rounded">ThinScroller</code> -
+                  Simple div with thin scrollbar
+                </li>
+                <li>
+                  <code className="bg-muted px-1 rounded">ThinScrollArea</code>{" "}
+                  - Radix-based scroll area with thin scrollbar
+                </li>
+              </ul>
             </div>
-          )}
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      </main>
     </div>
   );
 }

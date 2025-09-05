@@ -1,105 +1,110 @@
-"use client"
+"use client";
 
-import { useEffect, useState } from "react"
-import { createClient } from "@/lib/supabase/client"
-import { SiteHeader } from "@/components/site-header"
-import { LinkStatsCard } from "@/components/link-stats-card"
-import { LinksTable } from "@/components/links-table"
-import { UrlShortenerForm } from "@/components/url-shortener-form"
-import { Button } from "@/components/ui/button"
-import { useToast } from "@/hooks/use-toast"
-import { useRouter } from "next/navigation"
-import { Link2, BarChart3, MousePointer } from "lucide-react"
-import type { Link, GetLinksResponse } from "@/types/link"
+import { useEffect, useState } from "react";
+import { createClient } from "@/lib/supabase/client";
+import { SiteHeader } from "@/components/site-header";
+import { LinkStatsCard } from "@/components/link-stats-card";
+import { LinksTable } from "@/components/links-table";
+import { UrlShortenerForm } from "@/components/url-shortener-form";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
+import { useRouter } from "next/navigation";
+import { Link2, BarChart3, MousePointer } from "lucide-react";
+import type { Link, GetLinksResponse } from "@/types/link";
 
 export default function DashboardPage() {
-  const [user, setUser] = useState<any>(null)
-  const [links, setLinks] = useState<Link[]>([])
-  const [isLoading, setIsLoading] = useState(true)
+  const [user, setUser] = useState<any>(null);
+  const [links, setLinks] = useState<Link[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [stats, setStats] = useState({
     totalLinks: 0,
     totalClicks: 0,
     activeLinks: 0,
-  })
-  const { toast } = useToast()
-  const router = useRouter()
-  const supabase = createClient()
+  });
+  const { toast } = useToast();
+  const router = useRouter();
+  const supabase = createClient();
 
   useEffect(() => {
     const checkUser = async () => {
       const {
         data: { user },
         error,
-      } = await supabase.auth.getUser()
+      } = await supabase.auth.getUser();
 
       if (error || !user) {
-        router.push("/auth/login")
-        return
+        router.push("/auth/login");
+        return;
       }
 
-      setUser(user)
-      await fetchLinks()
-    }
+      setUser(user);
+      await fetchLinks();
+    };
 
-    checkUser()
-  }, [])
+    checkUser();
+  }, []);
 
   const fetchLinks = async () => {
     try {
-      setIsLoading(true)
-      const response = await fetch("/api/links")
+      setIsLoading(true);
+      const response = await fetch("/api/links");
 
       if (!response.ok) {
-        throw new Error("Failed to fetch links")
+        throw new Error("Failed to fetch links");
       }
 
-      const data: GetLinksResponse = await response.json()
-      setLinks(data.links)
+      const data: GetLinksResponse = await response.json();
+      setLinks(data.links);
 
       // Calculate stats
-      const totalClicks = data.links.reduce((sum, link) => sum + link.clicks, 0)
-      const activeLinks = data.links.filter((link) => link.isActive !== false).length
+      const totalClicks = data.links.reduce(
+        (sum, link) => sum + link.clicks,
+        0
+      );
+      const activeLinks = data.links.filter(
+        (link) => link.isActive !== false
+      ).length;
 
       setStats({
         totalLinks: data.links.length,
         totalClicks,
         activeLinks,
-      })
+      });
     } catch (error) {
       toast({
         title: "Error",
         description: "Failed to fetch your links",
         variant: "destructive",
-      })
+      });
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const handleDeleteLink = async (id: string) => {
     try {
       const response = await fetch(`/api/links/${id}`, {
         method: "DELETE",
-      })
+      });
 
       if (!response.ok) {
-        throw new Error("Failed to delete link")
+        throw new Error("Failed to delete link");
       }
 
       toast({
         title: "Success",
         description: "Link deleted successfully",
-      })
+      });
 
-      await fetchLinks()
+      await fetchLinks();
     } catch (error) {
       toast({
         title: "Error",
         description: "Failed to delete link",
         variant: "destructive",
-      })
+      });
     }
-  }
+  };
 
   const handleToggleStatus = async (id: string, isActive: boolean) => {
     try {
@@ -109,45 +114,49 @@ export default function DashboardPage() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ isActive }),
-      })
+      });
 
       if (!response.ok) {
-        throw new Error("Failed to update link")
+        throw new Error("Failed to update link");
       }
 
       toast({
         title: "Success",
-        description: `Link ${isActive ? "activated" : "deactivated"} successfully`,
-      })
+        description: `Link ${
+          isActive ? "activated" : "deactivated"
+        } successfully`,
+      });
 
-      await fetchLinks()
+      await fetchLinks();
     } catch (error) {
       toast({
         title: "Error",
         description: "Failed to update link",
         variant: "destructive",
-      })
+      });
     }
-  }
+  };
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-background thin-scrollbar">
         <SiteHeader isAuthenticated={true} userEmail={user?.email} />
         <main className="container mx-auto px-4 py-8">
           <div className="flex items-center justify-center min-h-[400px]">
             <div className="text-center">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-              <p className="mt-4 text-muted-foreground">Loading your dashboard...</p>
+              <p className="mt-4 text-muted-foreground">
+                Loading your dashboard...
+              </p>
             </div>
           </div>
         </main>
       </div>
-    )
+    );
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background thin-scrollbar">
       <SiteHeader isAuthenticated={true} userEmail={user?.email} />
 
       <main className="container mx-auto px-4 py-8 space-y-8">
@@ -155,7 +164,9 @@ export default function DashboardPage() {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
-            <p className="text-muted-foreground mt-1">Manage your shortened links and view analytics</p>
+            <p className="text-muted-foreground mt-1">
+              Manage your shortened links and view analytics
+            </p>
           </div>
           <Button onClick={() => window.location.reload()} variant="outline">
             Refresh
@@ -168,7 +179,13 @@ export default function DashboardPage() {
             title="Total Links"
             value={stats.totalLinks}
             description="Links you've created"
-            icon={<Link2 className="h-4 w-4" />}
+            icon={
+              <img
+                src="/knucklelink-logo.png"
+                alt="KnuckleLink"
+                className="h-4 w-4"
+              />
+            }
           />
           <LinkStatsCard
             title="Total Clicks"
@@ -186,13 +203,19 @@ export default function DashboardPage() {
 
         {/* Quick Shorten */}
         <div className="space-y-4">
-          <h2 className="text-xl font-semibold text-foreground">Create New Link</h2>
+          <h2 className="text-xl font-semibold text-foreground text-center">
+            Create New Link
+          </h2>
           <UrlShortenerForm isAuthenticated={true} />
         </div>
 
         {/* Links Table */}
-        <LinksTable links={links} onDelete={handleDeleteLink} onToggleStatus={handleToggleStatus} />
+        <LinksTable
+          links={links}
+          onDelete={handleDeleteLink}
+          onToggleStatus={handleToggleStatus}
+        />
       </main>
     </div>
-  )
+  );
 }
