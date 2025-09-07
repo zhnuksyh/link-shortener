@@ -54,11 +54,13 @@ export async function createApiClient() {
               secure: process.env.NODE_ENV === 'production',
               sameSite: 'lax' as const,
               httpOnly: false,
+              path: '/',
             }
             cookieStore.set(name, value, cookieOptions)
           })
-        } catch {
-          // Ignore cookie setting errors in API routes
+        } catch (error) {
+          // Log cookie setting errors for debugging
+          console.error('Cookie setting error in API route:', error)
         }
       },
     },

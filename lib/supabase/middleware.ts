@@ -26,6 +26,7 @@ export async function updateSession(request: NextRequest) {
               secure: process.env.NODE_ENV === 'production',
               sameSite: 'lax' as const,
               httpOnly: false, // Allow client-side access for auth cookies
+              path: '/',
             }
             supabaseResponse.cookies.set(name, value, cookieOptions)
           })
