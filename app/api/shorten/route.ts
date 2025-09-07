@@ -68,6 +68,23 @@ async function processShortenRequest(request: NextRequest, user: User, supabase:
 
 export async function POST(request: NextRequest) {
   try {
+    // Enhanced debugging
+    console.log('=== API SHORTEN DEBUG START ===')
+    console.log('Environment check:', {
+      NODE_ENV: process.env.NODE_ENV,
+      hasSupabaseUrl: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
+      hasSupabaseKey: !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+      supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL?.substring(0, 30) + '...',
+    })
+    
+    // Log all cookies
+    const cookies = request.cookies.getAll()
+    console.log('Request cookies:', cookies.map(c => ({ 
+      name: c.name, 
+      hasValue: !!c.value,
+      valueLength: c.value?.length || 0
+    })))
+    
     const supabase = await createApiClient()
 
     // Get the authenticated user - this is the most secure method
@@ -76,17 +93,28 @@ export async function POST(request: NextRequest) {
       error: authError,
     } = await supabase.auth.getUser()
     
+    console.log('Auth result:', {
+      hasUser: !!user,
+      userId: user?.id,
+      userEmail: user?.email,
+      error: authError?.message,
+      errorCode: authError?.status,
+    })
+    
     if (authError || !user) {
       console.log('Authentication failed:', authError)
+      console.log('=== API SHORTEN DEBUG END ===')
       return NextResponse.json({ 
         error: "Please create an account to shorten links and track analytics" 
       }, { status: 401 })
     }
 
+    console.log('=== API SHORTEN DEBUG END ===')
     // Process the shorten request with the authenticated user
     return await processShortenRequest(request, user, supabase)
   } catch (error) {
     console.error("API error:", error)
+    console.log('=== API SHORTEN DEBUG END ===')
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }
 }
