@@ -135,10 +135,13 @@ export function LinksTable({
                     </TableCell>
                     <TableCell className="text-center">
                       <Badge
+                        variant={
+                          link.isActive !== false ? "default" : "secondary"
+                        }
                         className={
                           link.isActive !== false
-                            ? "bg-green-100 text-green-800 border-green-200 hover:bg-green-200"
-                            : "bg-gray-900 text-white border-gray-900 hover:bg-gray-800"
+                            ? "bg-success/10 text-success border-success/20 hover:bg-success/20"
+                            : "bg-muted text-muted-foreground border-border hover:bg-muted/80"
                         }
                       >
                         {link.isActive !== false ? "Active" : "Inactive"}

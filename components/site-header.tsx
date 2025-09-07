@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 interface SiteHeaderProps {
   isAuthenticated?: boolean;
@@ -28,6 +29,7 @@ export function SiteHeader({
           </Link>
 
           <nav className="flex items-center space-x-4">
+            <ThemeToggle />
             {isAuthenticated ? (
               <>
                 <Button variant="ghost" asChild>

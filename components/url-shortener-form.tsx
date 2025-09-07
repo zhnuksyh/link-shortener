@@ -158,7 +158,7 @@ export function UrlShortenerForm({
                     <Copy className="h-4 w-4 mr-2" />
                     Copy
                     {showCopySuccess && (
-                      <div className="absolute -top-10 left-1/2 transform -translate-x-1/2 bg-green-500 text-white text-xs px-2 py-1 rounded shadow-lg whitespace-nowrap">
+                      <div className="absolute -top-10 left-1/2 transform -translate-x-1/2 bg-success text-success-foreground text-xs px-2 py-1 rounded shadow-lg whitespace-nowrap">
                         Link copied to clipboard!
                       </div>
                     )}

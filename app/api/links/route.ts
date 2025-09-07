@@ -1,7 +1,7 @@
 import { createClient } from "@/lib/supabase/server"
 import { isValidUrl, normalizeUrl } from "@/lib/utils/url-validator"
-import { createTinyURL } from "@/lib/services/tinyurl"
-import { generateUniqueShortCode } from "@/lib/utils/short-code-generator"
+import { createTinyURLShortLink } from "@/lib/services/tinyurl"
+// Removed import for non-existent short-code-generator
 import { type NextRequest, NextResponse } from "next/server"
 
 export async function POST(request: NextRequest) {
@@ -43,25 +43,29 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({
         id: existingLink.id,
         originalUrl: existingLink.original_url,
-        shortCode: existingLink.tinyurl_alias || existingLink.short_code,
-        shortUrl: existingLink.external_short_url || `${request.nextUrl.origin}/s/${existingLink.short_code}`,
+        shortCode: existingLink.tinyurl_alias,
+        shortUrl: existingLink.external_short_url,
         createdAt: existingLink.created_at,
       })
     }
 
     try {
-      const { shortUrl, alias } = await createTinyURL(normalizedUrl)
+      console.log('Creating TinyURL for:', normalizedUrl, 'user:', user.id)
+      const { shortUrl, alias, isExternal } = await createTinyURLShortLink(normalizedUrl, user.id)
+      console.log('TinyURL created successfully:', { shortUrl, alias, isExternal })
 
-      // Create new shortened link with our own domain
+      // Create new shortened link - only store TinyURL data
+      const insertData = {
+        original_url: normalizedUrl,
+        short_code: alias,
+        user_id: user.id,
+        tinyurl_alias: alias,
+        external_short_url: shortUrl,
+      }
+
       const { data: newLink, error: insertError } = await supabase
         .from("links")
-        .insert({
-          original_url: normalizedUrl,
-          short_code: alias, // Use the generated short code
-          tinyurl_alias: alias, // Keep for compatibility
-          external_short_url: shortUrl,
-          user_id: user.id,
-        })
+        .insert(insertData)
         .select()
         .single()
 
@@ -77,11 +81,12 @@ export async function POST(request: NextRequest) {
         shortUrl: newLink.external_short_url,
         createdAt: newLink.created_at,
       })
-    } catch (tinyUrlError) {
-      console.error("TinyURL error:", tinyUrlError)
+    } catch (shortUrlError) {
+      console.error("TinyURL creation error:", shortUrlError)
+      const errorMessage = shortUrlError instanceof Error ? shortUrlError.message : "Unknown error"
       return NextResponse.json(
         {
-          error: "Failed to create shortened URL. Please try again.",
+          error: `Failed to create shortened URL via TinyURL. Please try again later.`,
         },
         { status: 500 },
       )
@@ -132,8 +137,8 @@ export async function GET(request: NextRequest) {
     const formattedLinks = links.map((link) => ({
       id: link.id,
       originalUrl: link.original_url,
-      shortCode: link.tinyurl_alias || link.short_code,
-      shortUrl: link.external_short_url || `${request.nextUrl.origin}/s/${link.short_code}`,
+      shortCode: link.tinyurl_alias,
+      shortUrl: link.external_short_url,
       isActive: link.is_active,
       createdAt: link.created_at,
       updatedAt: link.updated_at,

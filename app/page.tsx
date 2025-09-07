@@ -12,10 +12,10 @@ export default async function HomePage() {
     <div className="min-h-screen bg-background flex flex-col">
       <SiteHeader isAuthenticated={!!user} userEmail={user?.email} />
 
-      <main className="flex-1 flex items-center justify-center px-4">
-        <div className="w-full max-w-6xl">
+      <main className="flex-1 px-4 py-8">
+        <div className="w-full max-w-6xl mx-auto">
           {/* Hero Section - Full width centered */}
-          <div className="w-full text-center space-y-16 mb-12 -mt-16">
+          <div className="w-full text-center space-y-16 mb-12">
             <h1 className="text-5xl sm:text-6xl lg:text-7xl xl:text-8xl font-bold text-foreground tracking-tight text-center">
               Shorten your links, <br />
               <span className="text-primary">Amplify your reach</span>
