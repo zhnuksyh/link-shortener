@@ -105,7 +105,11 @@ export default function LoginPage() {
                     <p className="text-sm text-destructive">{error}</p>
                   </div>
                 )}
-                <Button type="submit" className="w-full animate-hover-glow" disabled={isLoading}>
+                <Button
+                  type="submit"
+                  className="w-full animate-hover-glow"
+                  disabled={isLoading}
+                >
                   {isLoading ? "Signing in..." : "Sign in"}
                 </Button>
               </form>

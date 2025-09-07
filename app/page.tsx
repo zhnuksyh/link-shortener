@@ -13,7 +13,7 @@ export default async function HomePage() {
     <div className="min-h-screen bg-background flex flex-col">
       <SiteHeader isAuthenticated={!!user} userEmail={user?.email} />
 
-      <main className="flex-1 px-4 py-12">
+      <main className="flex-1 px-4 pt-26 pb-12">
         <div className="w-full max-w-6xl mx-auto">
           {/* Hero Section - Fixed position */}
           <div className="w-full text-center space-y-8 mb-16">
