@@ -106,7 +106,7 @@ export function UrlShortenerForm({
                 placeholder="Enter your long URL here..."
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
-                className="w-full h-14 text-lg bg-input border-border/50 focus:border-primary/50 transition-all duration-200 focus:scale-[1.02] focus:shadow-lg pr-12"
+                className="w-full h-14 text-lg bg-background border-border/50 focus:border-primary/50 transition-all duration-200 focus:scale-[1.02] focus:shadow-lg pr-12"
                 disabled={isLoading}
               />
               <Button
@@ -114,7 +114,7 @@ export function UrlShortenerForm({
                 variant="ghost"
                 size="sm"
                 onClick={pasteFromClipboard}
-                className="absolute right-2 top-1/2 transform -translate-y-1/2 h-10 w-10 p-0 animate-hover-scale border border-border/30 bg-background/50 hover:bg-background/80 rounded-md"
+                className="absolute right-2 top-1/2 transform -translate-y-1/2 h-10 w-10 p-0 animate-hover-scale border border-border/30 bg-background hover:bg-muted rounded-md"
                 disabled={isLoading}
                 title="Paste from clipboard"
               >
@@ -144,7 +144,7 @@ export function UrlShortenerForm({
                 placeholder="Give your link a title (optional)..."
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                className="w-full h-12 text-base bg-input border-border/50 focus:border-primary/50 transition-all duration-200 focus:scale-[1.02] focus:shadow-lg"
+                className="w-full h-12 text-base bg-background border-border/50 focus:border-primary/50 transition-all duration-200 focus:scale-[1.02] focus:shadow-lg"
                 disabled={isLoading}
                 maxLength={100}
               />
@@ -244,7 +244,7 @@ export function UrlShortenerForm({
                 Shortened URL
               </p>
               <div className="space-y-3">
-                <div className="p-3 bg-muted/30 rounded-md transition-all duration-200 hover:bg-muted/50">
+                <div className="p-3 bg-muted rounded-md transition-all duration-200 hover:bg-muted/80">
                   <span className="text-sm text-primary break-all">
                     {result.shortUrl}
                   </span>
@@ -291,7 +291,7 @@ export function UrlShortenerForm({
       )}
 
       {!isAuthenticated && !error && (
-        <Card className="border-border/50 bg-muted/20 animate-fade-in animate-hover-lift">
+        <Card className="border-border/50 bg-muted animate-fade-in animate-hover-lift">
           <CardContent className="p-4 text-center">
             <p className="text-sm text-muted-foreground">
               <a
