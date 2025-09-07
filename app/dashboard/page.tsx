@@ -26,18 +26,35 @@ export default function DashboardPage() {
 
   useEffect(() => {
     const checkUser = async () => {
-      const {
-        data: { user },
-        error,
-      } = await supabase.auth.getUser();
-
-      if (error || !user) {
+      // First try to get the current session
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      
+      if (sessionError) {
+        console.log('Session error:', sessionError);
         router.push("/auth/login");
         return;
       }
 
-      setUser(user);
-      await fetchLinks();
+      if (!session) {
+        // If no session, try to get user (this might refresh the session)
+        const {
+          data: { user },
+          error,
+        } = await supabase.auth.getUser();
+
+        if (error || !user) {
+          console.log('User error:', error);
+          router.push("/auth/login");
+          return;
+        }
+
+        setUser(user);
+        await fetchLinks();
+      } else {
+        // Session exists, use it
+        setUser(session.user);
+        await fetchLinks();
+      }
     };
 
     checkUser();
