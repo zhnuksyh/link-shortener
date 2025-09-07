@@ -13,7 +13,7 @@ export default async function HomePage() {
     <div className="min-h-screen bg-background flex flex-col">
       <SiteHeader isAuthenticated={!!user} userEmail={user?.email} />
 
-      <main className="flex-1 px-4 flex items-center justify-center min-h-[calc(100vh-120px)]">
+      <main className="flex-1 px-4 flex items-center justify-center">
         <div className="w-full max-w-6xl mx-auto">
           {/* Hero Section - Perfectly centered */}
           <div className="w-full text-center space-y-8">
@@ -27,9 +27,9 @@ export default async function HomePage() {
             </p>
           </div>
 
-          <div className="max-w-5xl mx-auto text-center space-y-4 mt-12">
+          <div className="max-w-5xl mx-auto text-center space-y-4 mt-10">
             {/* URL Shortener Form */}
-            <div className="py-4">
+            <div className="py-3">
               <UrlShortenerForm isAuthenticated={!!user} />
             </div>
           </div>

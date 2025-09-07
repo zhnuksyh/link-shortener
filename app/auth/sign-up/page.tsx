@@ -72,18 +72,18 @@ export default function SignUpPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background flex flex-col">
       <SiteHeader isAuthenticated={false} />
 
-      <div className="flex min-h-[calc(100vh-4rem)] w-full items-center justify-center p-6">
+      <div className="flex-1 flex w-full items-center justify-center p-4">
         <div className="w-full max-w-sm">
-          <div className="mb-8 flex justify-center">
+          <div className="mb-6 flex justify-center">
             <Image
               src="/knucklelink-logo.png"
               alt="KnuckleLink Logo"
-              width={120}
-              height={120}
-              className="h-20 w-20"
+              width={100}
+              height={100}
+              className="h-16 w-16"
             />
           </div>
           <Card className="border-border/50 shadow-sm">
