@@ -1,10 +1,10 @@
-import { createClient } from "@/lib/supabase/server"
+import { createApiClient } from "@/lib/supabase/server"
 import { type NextRequest, NextResponse } from "next/server"
 
 export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params
-    const supabase = await createClient()
+    const supabase = await createApiClient()
 
     // Check if user is authenticated
     const {
@@ -37,7 +37,7 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
 export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params
-    const supabase = await createClient()
+    const supabase = await createApiClient()
 
     // Check if user is authenticated
     const {

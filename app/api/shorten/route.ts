@@ -1,11 +1,11 @@
 import { isValidUrl, normalizeUrl } from "@/lib/utils/url-validator"
 import { createTinyURLShortLink } from "@/lib/services/tinyurl"
-import { createClient } from "@/lib/supabase/server"
+import { createApiClient } from "@/lib/supabase/server"
 import { type NextRequest, NextResponse } from "next/server"
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createClient()
+    const supabase = await createApiClient()
 
     // Check if user is authenticated
     const {
