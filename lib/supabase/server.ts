@@ -47,7 +47,16 @@ export async function createApiClient() {
       },
       setAll(cookiesToSet) {
         try {
-          cookiesToSet.forEach(({ name, value, options }) => cookieStore.set(name, value, options))
+          cookiesToSet.forEach(({ name, value, options }) => {
+            // Ensure proper cookie settings for API routes
+            const cookieOptions = {
+              ...options,
+              secure: process.env.NODE_ENV === 'production',
+              sameSite: 'lax' as const,
+              httpOnly: false,
+            }
+            cookieStore.set(name, value, cookieOptions)
+          })
         } catch {
           // Ignore cookie setting errors in API routes
         }

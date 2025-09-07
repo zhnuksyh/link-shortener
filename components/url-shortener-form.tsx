@@ -40,6 +40,7 @@ export function UrlShortenerForm({
         headers: {
           "Content-Type": "application/json",
         },
+        credentials: "include", // Ensure cookies are sent with the request
         body: JSON.stringify({
           originalUrl: url.trim(),
           title: title.trim() || undefined,

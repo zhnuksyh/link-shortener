@@ -19,7 +19,16 @@ export async function updateSession(request: NextRequest) {
           supabaseResponse = NextResponse.next({
             request,
           })
-          cookiesToSet.forEach(({ name, value, options }) => supabaseResponse.cookies.set(name, value, options))
+          cookiesToSet.forEach(({ name, value, options }) => {
+            // Ensure cookies are set with proper security settings
+            const cookieOptions = {
+              ...options,
+              secure: process.env.NODE_ENV === 'production',
+              sameSite: 'lax' as const,
+              httpOnly: false, // Allow client-side access for auth cookies
+            }
+            supabaseResponse.cookies.set(name, value, cookieOptions)
+          })
         },
       },
     },
