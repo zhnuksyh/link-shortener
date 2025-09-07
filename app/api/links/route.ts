@@ -187,38 +187,14 @@ export async function POST(request: NextRequest) {
   try {
     const supabase = await createApiClient()
 
-    // Try to refresh the session first
-    const { data: { session }, error: sessionError } = await supabase.auth.getSession()
-    console.log('Session check result:', { 
-      hasSession: !!session, 
-      sessionError,
-      userId: session?.user?.id 
-    })
-
-    // Check if user is authenticated
+    // Get the authenticated user - this is the most secure method
     const {
       data: { user },
       error: authError,
     } = await supabase.auth.getUser()
     
-    console.log('Auth check result:', { user: user?.id, error: authError })
-    
-    if (authError) {
+    if (authError || !user) {
       console.log('Authentication failed:', authError)
-      return NextResponse.json({ error: "Authentication failed. Please try logging in again." }, { status: 401 })
-    }
-    
-    if (!user) {
-      // If we have a session but no user, try to use the session user
-      if (session?.user && !user) {
-        console.log('Using session user instead of getUser result')
-        // Use the session user for the rest of the function
-        const sessionUser = session.user
-        // Continue with the rest of the function using sessionUser
-        return await processLinksRequest(request, sessionUser, supabase)
-      }
-      
-      console.log('Authentication failed: No user found')
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
@@ -234,36 +210,14 @@ export async function GET(request: NextRequest) {
   try {
     const supabase = await createApiClient()
 
-    // Try to refresh the session first
-    const { data: { session }, error: sessionError } = await supabase.auth.getSession()
-    console.log('Session check result:', { 
-      hasSession: !!session, 
-      sessionError,
-      userId: session?.user?.id 
-    })
-
-    // Check if user is authenticated
+    // Get the authenticated user - this is the most secure method
     const {
       data: { user },
       error: authError,
     } = await supabase.auth.getUser()
     
-    if (authError) {
+    if (authError || !user) {
       console.log('Authentication failed:', authError)
-      return NextResponse.json({ error: "Authentication failed. Please try logging in again." }, { status: 401 })
-    }
-    
-    if (!user) {
-      // If we have a session but no user, try to use the session user
-      if (session?.user && !user) {
-        console.log('Using session user instead of getUser result')
-        // Use the session user for the rest of the function
-        const sessionUser = session.user
-        // Continue with the rest of the function using sessionUser
-        return await processGetLinksRequest(request, sessionUser, supabase)
-      }
-      
-      console.log('Authentication failed: No user found')
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 

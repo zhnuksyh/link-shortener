@@ -12,13 +12,25 @@ export async function createClient() {
   }
 
   return createServerClient(supabaseUrl, supabaseAnonKey, {
+    auth: {
+      persistSession: false, // Disable session persistence on server-side
+    },
     cookies: {
       getAll() {
         return cookieStore.getAll()
       },
       setAll(cookiesToSet) {
         try {
-          cookiesToSet.forEach(({ name, value, options }) => cookieStore.set(name, value, options))
+          cookiesToSet.forEach(({ name, value, options }) => {
+            const cookieOptions = {
+              ...options,
+              secure: process.env.NODE_ENV === 'production',
+              sameSite: 'lax' as const,
+              httpOnly: false,
+              path: '/',
+            }
+            cookieStore.set(name, value, cookieOptions)
+          })
         } catch {
           // The `setAll` method was called from a Server Component.
           // This can be ignored if you have middleware refreshing
@@ -41,6 +53,9 @@ export async function createApiClient() {
   }
 
   return createServerClient(supabaseUrl, supabaseAnonKey, {
+    auth: {
+      persistSession: false, // Disable session persistence on server-side
+    },
     cookies: {
       getAll() {
         return cookieStore.getAll()

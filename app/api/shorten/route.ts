@@ -68,53 +68,16 @@ async function processShortenRequest(request: NextRequest, user: User, supabase:
 
 export async function POST(request: NextRequest) {
   try {
-    // Log cookies for debugging
-    const cookies = request.cookies.getAll()
-    console.log('Request cookies:', cookies.map(c => ({ name: c.name, hasValue: !!c.value })))
-    
     const supabase = await createApiClient()
 
-    // Try to refresh the session first
-    const { data: { session }, error: sessionError } = await supabase.auth.getSession()
-    console.log('Session check result:', { 
-      hasSession: !!session, 
-      sessionError,
-      userId: session?.user?.id 
-    })
-
-    // Check if user is authenticated
+    // Get the authenticated user - this is the most secure method
     const {
       data: { user },
       error: authError,
     } = await supabase.auth.getUser()
     
-    // Log authentication details for debugging
-    console.log('Auth check result:', {
-      user: user ? { id: user.id, email: user.email } : undefined,
-      error: authError
-    })
-    
-    if (authError) {
+    if (authError || !user) {
       console.log('Authentication failed:', authError)
-      return NextResponse.json({ 
-        error: "Authentication failed. Please try logging in again." 
-      }, { status: 401 })
-    }
-    
-    if (!user) {
-      // Check if this might be a session cookie issue
-      const hasAuthCookies = cookies.some(c => c.name.includes('supabase') || c.name.includes('auth'))
-      console.log('No user found, auth cookies present:', hasAuthCookies)
-      
-      // If we have a session but no user, try to use the session user
-      if (session?.user && !user) {
-        console.log('Using session user instead of getUser result')
-        // Use the session user for the rest of the function
-        const sessionUser = session.user
-        // Continue with the rest of the function using sessionUser
-        return await processShortenRequest(request, sessionUser, supabase)
-      }
-      
       return NextResponse.json({ 
         error: "Please create an account to shorten links and track analytics" 
       }, { status: 401 })

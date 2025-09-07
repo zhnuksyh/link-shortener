@@ -8,5 +8,11 @@ export function createClient() {
     throw new Error('Missing Supabase environment variables. Please check your .env.local file.')
   }
 
-  return createBrowserClient(supabaseUrl, supabaseAnonKey)
+  return createBrowserClient(supabaseUrl, supabaseAnonKey, {
+    auth: {
+      persistSession: true, // Enable session persistence on client-side
+      autoRefreshToken: true,
+      detectSessionInUrl: true,
+    },
+  })
 }
