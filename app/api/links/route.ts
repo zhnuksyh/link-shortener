@@ -35,13 +35,21 @@ export async function POST(request: NextRequest) {
     const normalizedUrl = normalizeUrl(originalUrl)
 
     // Check if user already has this URL shortened
-    const { data: existingLink } = await supabase
+    console.log('Checking for existing link:', { normalizedUrl, userId: user.id })
+    const { data: existingLink, error: existingLinkError } = await supabase
       .from("links")
       .select("*")
       .eq("original_url", normalizedUrl)
       .eq("user_id", user.id)
       .eq("is_active", true)
-      .single()
+      .maybeSingle()
+
+    console.log('Existing link check result:', { existingLink, error: existingLinkError })
+
+    // If there's an error (not just "no rows found"), log it but continue
+    if (existingLinkError && existingLinkError.code !== 'PGRST116') {
+      console.log('Error checking for existing link:', existingLinkError)
+    }
 
     if (existingLink) {
       return NextResponse.json({
