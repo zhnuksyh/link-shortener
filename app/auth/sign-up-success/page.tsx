@@ -23,25 +23,21 @@ export default function SignUpSuccessPage() {
                 <CheckCircle className="h-6 w-6 text-accent" />
               </div>
               <CardTitle className="text-2xl font-semibold text-foreground">
-                Check your email
+                Account Created Successfully
               </CardTitle>
               <CardDescription className="text-muted-foreground">
-                We've sent you a confirmation link to complete your registration
+                Your account has been created and you're now signed in
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="rounded-md bg-muted/50 p-4">
                 <p className="text-sm text-muted-foreground">
-                  Please check your email and click the confirmation link to
-                  activate your account. You may need to check your spam folder.
+                  You can now start shortening your links and managing your
+                  account.
                 </p>
               </div>
-              <Button
-                asChild
-                className="w-full bg-transparent"
-                variant="outline"
-              >
-                <Link href="/auth/login">Return to sign in</Link>
+              <Button asChild className="w-full">
+                <Link href="/dashboard">Go to Dashboard</Link>
               </Button>
             </CardContent>
           </Card>

@@ -17,6 +17,7 @@ import { SiteHeader } from "@/components/site-header";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import Image from "next/image";
 
 export default function SignUpPage() {
   const [email, setEmail] = useState("");
@@ -45,7 +46,7 @@ export default function SignUpPage() {
     }
 
     try {
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -55,7 +56,14 @@ export default function SignUpPage() {
         },
       });
       if (error) throw error;
-      router.push("/auth/sign-up-success");
+
+      // If user is created and confirmed, redirect to dashboard
+      if (data.user && data.session) {
+        router.push("/dashboard");
+      } else {
+        // If email confirmation is still required, show success message
+        router.push("/auth/sign-up-success");
+      }
     } catch (error: unknown) {
       setError(error instanceof Error ? error.message : "An error occurred");
     } finally {
@@ -69,6 +77,15 @@ export default function SignUpPage() {
 
       <div className="flex min-h-[calc(100vh-4rem)] w-full items-center justify-center p-6">
         <div className="w-full max-w-sm">
+          <div className="mb-8 flex justify-center">
+            <Image
+              src="/knucklelink-logo.png"
+              alt="KnuckleLink Logo"
+              width={120}
+              height={120}
+              className="h-20 w-20"
+            />
+          </div>
           <Card className="border-border/50 shadow-sm">
             <CardHeader className="space-y-2 text-center">
               <CardTitle className="text-2xl font-semibold text-foreground">

@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
       // Create new shortened link - only store TinyURL data
       const insertData = {
         original_url: normalizedUrl,
-        short_code: alias,
+        short_code: alias.length <= 10 ? alias : null, // Only set if it fits the original constraint
         user_id: user.id,
         tinyurl_alias: alias,
         external_short_url: shortUrl,
@@ -71,7 +71,11 @@ export async function POST(request: NextRequest) {
 
       if (insertError) {
         console.error("Database insert error:", insertError)
-        return NextResponse.json({ error: "Failed to create shortened link" }, { status: 500 })
+        console.error("Insert data:", insertData)
+        return NextResponse.json({ 
+          error: "Failed to create shortened link", 
+          details: insertError.message 
+        }, { status: 500 })
       }
 
       return NextResponse.json({

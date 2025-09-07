@@ -129,7 +129,13 @@ export function LinksTable({
                       </div>
                     </TableCell>
                     <TableCell className="text-center">
-                      <span className="text-sm bg-muted/50 px-2 py-1 rounded">
+                      <span
+                        className={`text-sm px-2 py-1 rounded ${
+                          link.shortCode.includes("Invalid request")
+                            ? "bg-red-100 text-red-800 border border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800"
+                            : "bg-muted/50"
+                        }`}
+                      >
                         {link.shortCode}
                       </span>
                     </TableCell>
@@ -141,7 +147,7 @@ export function LinksTable({
                         className={
                           link.isActive !== false
                             ? "bg-success/10 text-success border-success/20 hover:bg-success/20"
-                            : "bg-muted text-muted-foreground border-border hover:bg-muted/80"
+                            : "bg-red-100 text-red-800 border-red-200 hover:bg-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800 dark:hover:bg-red-900/30"
                         }
                       >
                         {link.isActive !== false ? "Active" : "Inactive"}
