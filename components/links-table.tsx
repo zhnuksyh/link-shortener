@@ -189,7 +189,8 @@ export function LinksTable({
                           </DropdownMenuItem>
                           <DropdownMenuItem
                             onClick={() => onDelete(link.id)}
-                            className="cursor-pointer text-destructive focus:text-destructive"
+                            variant="destructive"
+                            className="cursor-pointer"
                           >
                             <Trash2 className="mr-2 h-4 w-4" />
                             Delete

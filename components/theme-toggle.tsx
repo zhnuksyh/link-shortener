@@ -3,7 +3,6 @@
 import * as React from "react";
 import { Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
-import { Button } from "@/components/ui/button";
 
 export function ThemeToggle() {
   const { theme, setTheme } = useTheme();
@@ -16,10 +15,13 @@ export function ThemeToggle() {
 
   if (!mounted) {
     return (
-      <Button variant="ghost" size="icon" className="h-9 w-9">
-        <Sun className="h-4 w-4" />
-        <span className="sr-only">Toggle theme</span>
-      </Button>
+      <div className="theme-toggle-container">
+        <div className="theme-toggle-track">
+          <div className="theme-toggle-knob">
+            <Sun className="theme-toggle-icon" />
+          </div>
+        </div>
+      </div>
     );
   }
 
@@ -30,19 +32,28 @@ export function ThemeToggle() {
   };
 
   return (
-    <Button
-      variant="ghost"
-      size="icon"
+    <div
+      className={`theme-toggle-container ${isDark ? "dark" : "light"}`}
       onClick={handleToggle}
-      className="h-9 w-9 transition-all duration-200 hover:scale-105"
+      role="button"
+      tabIndex={0}
       aria-label={`Switch to ${isDark ? "light" : "dark"} mode`}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          handleToggle();
+        }
+      }}
     >
-      {isDark ? (
-        <Sun className="h-4 w-4 transition-all duration-200 rotate-0 scale-100" />
-      ) : (
-        <Moon className="h-4 w-4 transition-all duration-200 rotate-0 scale-100" />
-      )}
-      <span className="sr-only">Toggle theme</span>
-    </Button>
+      <div className="theme-toggle-track">
+        <div className="theme-toggle-knob">
+          {isDark ? (
+            <Moon className="theme-toggle-icon" />
+          ) : (
+            <Sun className="theme-toggle-icon" />
+          )}
+        </div>
+      </div>
+    </div>
   );
 }
