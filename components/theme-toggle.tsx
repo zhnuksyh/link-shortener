@@ -33,7 +33,7 @@ export function ThemeToggle() {
 
   return (
     <div
-      className={`theme-toggle-container ${isDark ? "dark" : "light"}`}
+      className={`theme-toggle-container ${isDark ? "dark" : "light"} animate-hover-scale`}
       onClick={handleToggle}
       role="button"
       tabIndex={0}
@@ -48,9 +48,9 @@ export function ThemeToggle() {
       <div className="theme-toggle-track">
         <div className="theme-toggle-knob">
           {isDark ? (
-            <Moon className="theme-toggle-icon" />
+            <Moon className="theme-toggle-icon animate-fade-in" />
           ) : (
-            <Sun className="theme-toggle-icon" />
+            <Sun className="theme-toggle-icon animate-fade-in" />
           )}
         </div>
       </div>

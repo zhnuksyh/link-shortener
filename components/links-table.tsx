@@ -47,7 +47,9 @@ export function LinksTable({
   const filteredLinks = links.filter(
     (link) =>
       link.originalUrl.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      link.shortCode.toLowerCase().includes(searchTerm.toLowerCase())
+      link.shortCode.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (link.title &&
+        link.title.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
   const copyToClipboard = async (text: string) => {
@@ -84,19 +86,19 @@ export function LinksTable({
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <CardTitle className="text-xl font-semibold">Your Links</CardTitle>
           <div className="relative max-w-sm">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4 transition-colors duration-200 z-10 pointer-events-none" />
             <Input
-              placeholder="Search links..."
+              placeholder="Search by title, URL, or code..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 bg-input border-border/50"
+              className="pl-10 bg-input border-border/50 transition-all duration-200 focus:scale-[1.02] focus:shadow-lg"
             />
           </div>
         </div>
       </CardHeader>
       <CardContent>
         {filteredLinks.length === 0 ? (
-          <div className="text-center py-8">
+          <div className="text-center py-8 animate-fade-in">
             <p className="text-muted-foreground">
               {searchTerm
                 ? "No links found matching your search."
@@ -108,7 +110,7 @@ export function LinksTable({
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Original URL</TableHead>
+                  <TableHead>Title / Original URL</TableHead>
                   <TableHead className="text-center">Short Code</TableHead>
                   <TableHead className="text-center">Status</TableHead>
                   <TableHead className="text-center">Created</TableHead>
@@ -116,11 +118,26 @@ export function LinksTable({
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredLinks.map((link) => (
-                  <TableRow key={link.id}>
+                {filteredLinks.map((link, index) => (
+                  <TableRow
+                    key={link.id}
+                    className="animate-slide-up transition-colors duration-200 hover:bg-muted/30"
+                    style={{ animationDelay: `${index * 0.1}s` }}
+                  >
                     <TableCell>
                       <div className="space-y-1">
-                        <p className="font-medium text-sm">
+                        {link.title && (
+                          <p className="font-semibold text-sm text-foreground">
+                            {link.title}
+                          </p>
+                        )}
+                        <p
+                          className={`text-sm ${
+                            link.title
+                              ? "text-muted-foreground"
+                              : "font-medium text-foreground"
+                          }`}
+                        >
                           {truncateUrl(link.originalUrl)}
                         </p>
                         <p className="text-xs text-muted-foreground">
@@ -162,7 +179,7 @@ export function LinksTable({
                           <Button
                             variant="ghost"
                             size="sm"
-                            className="h-8 w-8 p-0"
+                            className="h-8 w-8 p-0 animate-hover-scale"
                           >
                             <MoreHorizontal className="h-4 w-4" />
                           </Button>

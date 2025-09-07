@@ -138,9 +138,9 @@ export default function DashboardPage() {
         <main className="w-full flex justify-center px-4 py-8">
           <div className="w-full max-w-6xl">
             <div className="flex items-center justify-center min-h-[400px]">
-              <div className="text-center">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-                <p className="mt-4 text-muted-foreground">
+              <div className="text-center animate-fade-in">
+                <div className="animate-spin-slow rounded-full h-12 w-12 border-4 border-primary/20 border-t-primary mx-auto"></div>
+                <p className="mt-4 text-muted-foreground animate-pulse-slow">
                   Loading your dashboard...
                 </p>
               </div>
@@ -158,36 +158,44 @@ export default function DashboardPage() {
       <main className="w-full flex justify-center px-4 py-8">
         <div className="w-full max-w-6xl space-y-8">
           {/* Header */}
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 animate-slide-up">
             <div>
               <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
               <p className="text-muted-foreground mt-1">
                 Manage your shortened links and view analytics
               </p>
             </div>
-            <Button onClick={() => window.location.reload()} variant="outline">
+            <Button
+              onClick={() => window.location.reload()}
+              variant="outline"
+              className="animate-hover-scale"
+            >
               Refresh
             </Button>
           </div>
 
           {/* Stats Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <LinkStatsCard
-              title="Total Links"
-              value={stats.totalLinks}
-              description="Links you've created"
-              icon={<Link2 className="h-4 w-4" />}
-            />
-            <LinkStatsCard
-              title="Active Links"
-              value={stats.activeLinks}
-              description="Currently working links"
-              icon={<BarChart3 className="h-4 w-4" />}
-            />
+            <div className="animate-slide-in-left animate-stagger-1">
+              <LinkStatsCard
+                title="Total Links"
+                value={stats.totalLinks}
+                description="Links you've created"
+                icon={<Link2 className="h-4 w-4" />}
+              />
+            </div>
+            <div className="animate-slide-in-right animate-stagger-2">
+              <LinkStatsCard
+                title="Active Links"
+                value={stats.activeLinks}
+                description="Currently working links"
+                icon={<BarChart3 className="h-4 w-4" />}
+              />
+            </div>
           </div>
 
           {/* Quick Shorten */}
-          <div className="space-y-4">
+          <div className="space-y-4 animate-scale-in animate-stagger-3">
             <h2 className="text-xl font-semibold text-foreground text-center">
               Create New Link
             </h2>
@@ -195,11 +203,13 @@ export default function DashboardPage() {
           </div>
 
           {/* Links Table */}
-          <LinksTable
-            links={links}
-            onDelete={handleDeleteLink}
-            onToggleStatus={handleToggleStatus}
-          />
+          <div className="animate-fade-in animate-stagger-4">
+            <LinksTable
+              links={links}
+              onDelete={handleDeleteLink}
+              onToggleStatus={handleToggleStatus}
+            />
+          </div>
         </div>
       </main>
     </div>

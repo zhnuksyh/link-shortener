@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const { originalUrl } = await request.json()
+    const { originalUrl, title } = await request.json()
 
     if (!originalUrl) {
       return NextResponse.json({ error: "Original URL is required" }, { status: 400 })
@@ -45,6 +45,7 @@ export async function POST(request: NextRequest) {
         originalUrl: existingLink.original_url,
         shortCode: existingLink.tinyurl_alias,
         shortUrl: existingLink.external_short_url,
+        title: existingLink.title,
         createdAt: existingLink.created_at,
       })
     }
@@ -61,6 +62,7 @@ export async function POST(request: NextRequest) {
         user_id: user.id,
         tinyurl_alias: alias,
         external_short_url: shortUrl,
+        title: title?.trim() || null,
       }
 
       const { data: newLink, error: insertError } = await supabase
@@ -72,10 +74,26 @@ export async function POST(request: NextRequest) {
       if (insertError) {
         console.error("Database insert error:", insertError)
         console.error("Insert data:", insertData)
+        
+        // Provide more specific database error messages
+        let userErrorMessage = "Failed to save the shortened link to your account."
+        let statusCode = 500
+        
+        if (insertError.message.includes('duplicate') || insertError.message.includes('unique')) {
+          userErrorMessage = "This link already exists in your account. Please check your dashboard for the existing shortened link."
+          statusCode = 409
+        } else if (insertError.message.includes('foreign key') || insertError.message.includes('constraint')) {
+          userErrorMessage = "There was an issue with your account data. Please try logging out and back in, then try again."
+          statusCode = 400
+        } else if (insertError.message.includes('timeout')) {
+          userErrorMessage = "Database operation timed out. Please try again."
+          statusCode = 504
+        }
+        
         return NextResponse.json({ 
-          error: "Failed to create shortened link", 
+          error: userErrorMessage,
           details: insertError.message 
-        }, { status: 500 })
+        }, { status: statusCode })
       }
 
       return NextResponse.json({
@@ -83,16 +101,40 @@ export async function POST(request: NextRequest) {
         originalUrl: newLink.original_url,
         shortCode: newLink.tinyurl_alias,
         shortUrl: newLink.external_short_url,
+        title: newLink.title,
         createdAt: newLink.created_at,
       })
     } catch (shortUrlError) {
       console.error("TinyURL creation error:", shortUrlError)
       const errorMessage = shortUrlError instanceof Error ? shortUrlError.message : "Unknown error"
+      
+      // Provide more specific error messages to the user
+      let userErrorMessage = "Failed to create shortened URL. Please try again later."
+      let statusCode = 500
+      
+      if (errorMessage.includes('rejected this URL') || errorMessage.includes('blocked')) {
+        userErrorMessage = "This URL cannot be shortened. TinyURL may have blocked this domain or the URL may be invalid. Please try a different URL."
+        statusCode = 400
+      } else if (errorMessage.includes('Network error') || errorMessage.includes('fetch')) {
+        userErrorMessage = "Network error: Unable to connect to the shortening service. Please check your internet connection and try again."
+        statusCode = 503
+      } else if (errorMessage.includes('timeout')) {
+        userErrorMessage = "Request timeout: The shortening service is taking too long to respond. Please try again."
+        statusCode = 504
+      } else if (errorMessage.includes('Invalid response') || errorMessage.includes('Empty response')) {
+        userErrorMessage = "Invalid response from the shortening service. Please try again."
+        statusCode = 502
+      } else if (errorMessage.includes('Invalid URL format')) {
+        userErrorMessage = "The provided URL format is invalid. Please check the URL and try again."
+        statusCode = 400
+      }
+      
       return NextResponse.json(
         {
-          error: `Failed to create shortened URL via TinyURL. Please try again later.`,
+          error: userErrorMessage,
+          details: errorMessage, // Include technical details for debugging
         },
-        { status: 500 },
+        { status: statusCode },
       )
     }
   } catch (error) {
@@ -143,6 +185,7 @@ export async function GET(request: NextRequest) {
       originalUrl: link.original_url,
       shortCode: link.tinyurl_alias,
       shortUrl: link.external_short_url,
+      title: link.title,
       isActive: link.is_active,
       createdAt: link.created_at,
       updatedAt: link.updated_at,

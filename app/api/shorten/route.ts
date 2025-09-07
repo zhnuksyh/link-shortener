@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
       }, { status: 401 })
     }
 
-    const { originalUrl } = await request.json()
+    const { originalUrl, title } = await request.json()
 
     if (!originalUrl) {
       return NextResponse.json({ error: "Original URL is required" }, { status: 400 })
@@ -40,6 +40,7 @@ export async function POST(request: NextRequest) {
         originalUrl: normalizedUrl,
         shortCode: alias,
         shortUrl: shortUrl,
+        title: title?.trim() || undefined,
         createdAt: new Date().toISOString(),
         isExternal: isExternal,
       })
@@ -49,20 +50,31 @@ export async function POST(request: NextRequest) {
       
       // Provide more specific error messages to the user
       let userErrorMessage = "Failed to create shortened URL. Please try again later."
+      let statusCode = 500
       
-      if (errorMessage.includes('rejected this URL')) {
+      if (errorMessage.includes('rejected this URL') || errorMessage.includes('blocked')) {
         userErrorMessage = "This URL cannot be shortened. TinyURL may have blocked this domain or the URL may be invalid. Please try a different URL."
-      } else if (errorMessage.includes('Network error')) {
+        statusCode = 400
+      } else if (errorMessage.includes('Network error') || errorMessage.includes('fetch')) {
         userErrorMessage = "Network error: Unable to connect to the shortening service. Please check your internet connection and try again."
+        statusCode = 503
       } else if (errorMessage.includes('timeout')) {
         userErrorMessage = "Request timeout: The shortening service is taking too long to respond. Please try again."
+        statusCode = 504
+      } else if (errorMessage.includes('Invalid response') || errorMessage.includes('Empty response')) {
+        userErrorMessage = "Invalid response from the shortening service. Please try again."
+        statusCode = 502
+      } else if (errorMessage.includes('Invalid URL format')) {
+        userErrorMessage = "The provided URL format is invalid. Please check the URL and try again."
+        statusCode = 400
       }
       
       return NextResponse.json(
         {
           error: userErrorMessage,
+          details: errorMessage, // Include technical details for debugging
         },
-        { status: 500 },
+        { status: statusCode },
       )
     }
   } catch (error) {

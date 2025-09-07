@@ -36,12 +36,24 @@ export async function createTinyURL(originalUrl: string): Promise<{ shortUrl: st
         const errorText = await response.text()
         console.error('TinyURL API error response:', errorText)
         
-        // Handle specific error cases
-        if (response.status === 400 && errorText.toLowerCase().includes('error')) {
-          throw new Error(`TinyURL rejected this URL. The URL may be blocked or invalid. Please try a different URL.`)
+        // Handle specific error cases with more detailed messages
+        if (response.status === 400) {
+          if (errorText.toLowerCase().includes('error') || errorText.toLowerCase().includes('invalid')) {
+            throw new Error(`TinyURL rejected this URL. The URL may be blocked, invalid, or contain prohibited content. Please try a different URL.`)
+          } else if (errorText.toLowerCase().includes('spam') || errorText.toLowerCase().includes('abuse')) {
+            throw new Error(`TinyURL blocked this URL due to spam or abuse detection. Please try a different URL.`)
+          } else {
+            throw new Error(`TinyURL rejected this URL (${response.status}): ${errorText}`)
+          }
+        } else if (response.status === 403) {
+          throw new Error(`TinyURL access forbidden. The URL may be blocked or restricted. Please try a different URL.`)
+        } else if (response.status === 429) {
+          throw new Error(`TinyURL rate limit exceeded. Please wait a moment and try again.`)
+        } else if (response.status >= 500) {
+          throw new Error(`TinyURL service is temporarily unavailable (${response.status}). Please try again later.`)
+        } else {
+          throw new Error(`TinyURL API error: ${response.status} ${response.statusText} - ${errorText}`)
         }
-        
-        throw new Error(`TinyURL API error: ${response.status} ${response.statusText} - ${errorText}`)
       }
 
       const tinyUrl = await response.text()
@@ -163,17 +175,24 @@ export async function createTinyURLShortLink(originalUrl: string, userId: string
     console.error('TinyURL failed:', tinyUrlError)
     const errorMessage = tinyUrlError instanceof Error ? tinyUrlError.message : 'Unknown error'
     
-    // Provide more specific error messages
-    if (errorMessage.includes('fetch')) {
+    // Provide more specific error messages based on the error type
+    if (errorMessage.includes('fetch') || errorMessage.includes('Network error')) {
       throw new Error('Network error: Unable to connect to TinyURL service. Please check your internet connection and try again.')
-    } else if (errorMessage.includes('timeout')) {
+    } else if (errorMessage.includes('timeout') || errorMessage.includes('abort')) {
       throw new Error('Request timeout: TinyURL service is taking too long to respond. Please try again.')
-    } else if (errorMessage.includes('Invalid response')) {
+    } else if (errorMessage.includes('Invalid response') || errorMessage.includes('Empty response')) {
       throw new Error('Invalid response from TinyURL service. Please try again.')
-    } else if (errorMessage.includes('rejected this URL')) {
-      throw new Error('TinyURL rejected this URL. The URL may be blocked or invalid. Please try a different URL.')
+    } else if (errorMessage.includes('rejected this URL') || errorMessage.includes('blocked') || errorMessage.includes('forbidden')) {
+      throw new Error('TinyURL rejected this URL. The URL may be blocked, invalid, or contain prohibited content. Please try a different URL.')
+    } else if (errorMessage.includes('rate limit') || errorMessage.includes('429')) {
+      throw new Error('TinyURL rate limit exceeded. Please wait a moment and try again.')
+    } else if (errorMessage.includes('spam') || errorMessage.includes('abuse')) {
+      throw new Error('TinyURL blocked this URL due to spam or abuse detection. Please try a different URL.')
+    } else if (errorMessage.includes('temporarily unavailable') || errorMessage.includes('500')) {
+      throw new Error('TinyURL service is temporarily unavailable. Please try again later.')
     } else {
-      throw new Error(`Failed to create shortened URL via TinyURL. ${errorMessage}`)
+      // Pass through the original error message if it's already user-friendly
+      throw new Error(errorMessage)
     }
   }
 }

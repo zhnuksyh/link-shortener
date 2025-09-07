@@ -3,6 +3,7 @@ export interface Link {
   originalUrl: string
   shortCode: string
   shortUrl: string
+  title?: string
   isActive?: boolean
   createdAt: string
   updatedAt?: string
@@ -10,6 +11,7 @@ export interface Link {
 
 export interface CreateLinkRequest {
   originalUrl: string
+  title?: string
 }
 
 export interface CreateLinkResponse {
@@ -17,6 +19,7 @@ export interface CreateLinkResponse {
   originalUrl: string
   shortCode: string
   shortUrl: string
+  title?: string
   createdAt: string
 }
 

@@ -52,27 +52,27 @@ export default function LoginPage() {
 
       <div className="flex-1 flex w-full items-center justify-center p-4">
         <div className="w-full max-w-sm">
-          <div className="mb-6 flex justify-center">
+          <div className="mb-6 flex justify-center animate-bounce-in">
             <Image
               src="/knucklelink-logo.png"
               alt="KnuckleLink Logo"
               width={100}
               height={100}
-              className="h-16 w-16"
+              className="h-16 w-16 transition-transform duration-200 hover:rotate-12"
             />
           </div>
-          <Card className="border-border/50 shadow-sm">
+          <Card className="border-border/50 shadow-sm animate-scale-in animate-hover-lift">
             <CardHeader className="space-y-2 text-center">
-              <CardTitle className="text-2xl font-semibold text-foreground">
+              <CardTitle className="text-2xl font-semibold text-foreground animate-fade-in animate-stagger-1">
                 Welcome back
               </CardTitle>
-              <CardDescription className="text-muted-foreground">
+              <CardDescription className="text-muted-foreground animate-fade-in animate-stagger-2">
                 Sign in to your account to manage your links
               </CardDescription>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleLogin} className="space-y-4">
-                <div className="space-y-2">
+                <div className="space-y-2 animate-slide-up animate-stagger-3">
                   <Label htmlFor="email" className="text-sm font-medium">
                     Email
                   </Label>
@@ -83,10 +83,10 @@ export default function LoginPage() {
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="bg-input border-border/50"
+                    className="bg-input border-border/50 transition-all duration-200 focus:scale-[1.02] focus:shadow-lg"
                   />
                 </div>
-                <div className="space-y-2">
+                <div className="space-y-2 animate-slide-up animate-stagger-4">
                   <Label htmlFor="password" className="text-sm font-medium">
                     Password
                   </Label>
@@ -97,24 +97,24 @@ export default function LoginPage() {
                     required
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="bg-input border-border/50"
+                    className="bg-input border-border/50 transition-all duration-200 focus:scale-[1.02] focus:shadow-lg"
                   />
                 </div>
                 {error && (
-                  <div className="rounded-md bg-destructive/10 p-3">
+                  <div className="rounded-md bg-destructive/10 p-3 animate-bounce-in">
                     <p className="text-sm text-destructive">{error}</p>
                   </div>
                 )}
-                <Button type="submit" className="w-full" disabled={isLoading}>
+                <Button type="submit" className="w-full animate-hover-glow" disabled={isLoading}>
                   {isLoading ? "Signing in..." : "Sign in"}
                 </Button>
               </form>
-              <div className="mt-6 text-center">
+              <div className="mt-6 text-center animate-fade-in">
                 <p className="text-sm text-muted-foreground">
                   Don't have an account?{" "}
                   <Link
                     href="/auth/sign-up"
-                    className="font-medium text-primary hover:text-primary/80 underline-offset-4 hover:underline"
+                    className="font-medium text-primary hover:text-primary/80 underline-offset-4 hover:underline transition-all duration-200 hover:scale-105"
                   >
                     Sign up
                   </Link>
