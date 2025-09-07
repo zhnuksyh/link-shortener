@@ -46,7 +46,9 @@ export default function DashboardPage() {
   const fetchLinks = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch("/api/links");
+      const response = await fetch("/api/links", {
+        credentials: "include", // Ensure cookies are sent with the request
+      });
 
       if (!response.ok) {
         throw new Error("Failed to fetch links");
@@ -79,6 +81,7 @@ export default function DashboardPage() {
     try {
       const response = await fetch(`/api/links/${id}`, {
         method: "DELETE",
+        credentials: "include", // Ensure cookies are sent with the request
       });
 
       if (!response.ok) {
@@ -107,6 +110,7 @@ export default function DashboardPage() {
         headers: {
           "Content-Type": "application/json",
         },
+        credentials: "include", // Ensure cookies are sent with the request
         body: JSON.stringify({ isActive }),
       });
 
