@@ -10,29 +10,20 @@ export default async function HomePage() {
   } = await supabase.auth.getUser();
 
   return (
-    <div className="min-h-screen bg-background flex flex-col grid-background">
-      {/* Blur layers for depth */}
-      <div className="blur-layer-1"></div>
-      <div className="blur-layer-2"></div>
-      <div className="blur-layer-3"></div>
-
-      {/* Enhanced vignette layers */}
-      <div className="vignette-layer-1"></div>
-      <div className="vignette-layer-2"></div>
-
+    <div className="min-h-screen bg-background flex flex-col">
       <SiteHeader isAuthenticated={!!user} userEmail={user?.email} />
 
       <main className="flex-1 px-4 pt-26 pb-12">
         <div className="w-full max-w-6xl mx-auto">
           {/* Hero Section - Fixed position */}
           <div className="w-full text-center space-y-8 mb-16">
-            <h1 className="text-5xl sm:text-6xl lg:text-7xl xl:text-8xl font-bold text-foreground tracking-tight animate-slide-up animate-stagger-1 text-glow-light-black">
+            <h1 className="text-5xl sm:text-6xl lg:text-7xl xl:text-8xl font-bold text-foreground tracking-tight animate-slide-up animate-stagger-1">
               Shorten your links, <br />
-              <span className="text-primary animate-fade-in animate-stagger-2 text-glow-light">
+              <span className="text-primary animate-fade-in animate-stagger-2">
                 Amplify your reach
               </span>
             </h1>
-            <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed animate-slide-up animate-stagger-3 text-glow-light-subtle-black">
+            <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed animate-slide-up animate-stagger-3">
               Transform long, unwieldy URLs into clean, shareable links. <br />
               Manage your links and make every share count.
             </p>
