@@ -18,7 +18,12 @@ export async function createClient() {
       },
       set(name: string, value: string, options: any) {
         try {
-          cookieStore.set(name, value, options)
+          cookieStore.set(name, value, {
+            ...options,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'lax',
+            httpOnly: false
+          })
         } catch {
           // The `set` method was called from a Server Component.
           // This can be ignored if you have middleware refreshing
@@ -27,7 +32,13 @@ export async function createClient() {
       },
       remove(name: string, options: any) {
         try {
-          cookieStore.set(name, '', { ...options, maxAge: 0 })
+          cookieStore.set(name, '', { 
+            ...options, 
+            maxAge: 0,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'lax',
+            httpOnly: false
+          })
         } catch {
           // The `remove` method was called from a Server Component.
           // This can be ignored if you have middleware refreshing
