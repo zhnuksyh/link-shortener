@@ -1,6 +1,7 @@
 import { createApiClient } from "@/lib/supabase/server"
 import { isValidUrl, normalizeUrl } from "@/lib/utils/url-validator"
 import { createTinyURLShortLink } from "@/lib/services/tinyurl"
+import { authenticateUser, createAuthErrorResponse } from "@/lib/auth-helper"
 // Removed import for non-existent short-code-generator
 import { type NextRequest, NextResponse } from "next/server"
 import type { User } from "@supabase/supabase-js"
@@ -194,39 +195,40 @@ export async function POST(request: NextRequest) {
       supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL?.substring(0, 30) + '...',
     })
     
-    // Log all cookies
-    const cookies = request.cookies.getAll()
-    console.log('Request cookies:', cookies.map(c => ({ 
-      name: c.name, 
-      hasValue: !!c.value,
-      valueLength: c.value?.length || 0
-    })))
-    
-    const supabase = await createApiClient()
-
-    // Get the authenticated user - this is the most secure method
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser()
-    
-    console.log('Auth result:', {
-      hasUser: !!user,
-      userId: user?.id,
-      userEmail: user?.email,
-      error: authError?.message,
-      errorCode: authError?.status,
+    // Log request headers for debugging
+    console.log('Request headers:', {
+      origin: request.headers.get('origin'),
+      referer: request.headers.get('referer'),
+      userAgent: request.headers.get('user-agent')?.substring(0, 50) + '...',
+      cookie: request.headers.get('cookie')?.substring(0, 100) + '...',
     })
     
-    if (authError || !user) {
-      console.log('Authentication failed:', authError)
+    // Use the authentication helper
+    const authResult = await authenticateUser(request)
+    
+    console.log('Auth result:', {
+      hasUser: !!authResult.user,
+      userId: authResult.user?.id,
+      userEmail: authResult.user?.email,
+      error: authResult.error,
+      debug: authResult.debug,
+    })
+    
+    if (authResult.error || !authResult.user) {
+      console.log('Authentication failed:', authResult.error)
       console.log('=== API LINKS POST DEBUG END ===')
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+      
+      // Return more detailed error for debugging
+      return NextResponse.json(createAuthErrorResponse(authResult), { status: 401 })
     }
 
     console.log('=== API LINKS POST DEBUG END ===')
+    
+    // Get supabase client for processing
+    const supabase = await createApiClient()
+    
     // Process the links request with the authenticated user
-    return await processLinksRequest(request, user, supabase)
+    return await processLinksRequest(request, authResult.user, supabase)
   } catch (error) {
     console.error("API error:", error)
     console.log('=== API LINKS POST DEBUG END ===')
@@ -245,42 +247,58 @@ export async function GET(request: NextRequest) {
       supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL?.substring(0, 30) + '...',
     })
     
-    // Log all cookies
-    const cookies = request.cookies.getAll()
-    console.log('Request cookies:', cookies.map(c => ({ 
-      name: c.name, 
-      hasValue: !!c.value,
-      valueLength: c.value?.length || 0
-    })))
-    
-    const supabase = await createApiClient()
-
-    // Get the authenticated user - this is the most secure method
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser()
-    
-    console.log('Auth result:', {
-      hasUser: !!user,
-      userId: user?.id,
-      userEmail: user?.email,
-      error: authError?.message,
-      errorCode: authError?.status,
+    // Log request headers for debugging
+    console.log('Request headers:', {
+      origin: request.headers.get('origin'),
+      referer: request.headers.get('referer'),
+      userAgent: request.headers.get('user-agent')?.substring(0, 50) + '...',
+      cookie: request.headers.get('cookie')?.substring(0, 100) + '...',
     })
     
-    if (authError || !user) {
-      console.log('Authentication failed:', authError)
+    // Use the authentication helper
+    const authResult = await authenticateUser(request)
+    
+    console.log('Auth result:', {
+      hasUser: !!authResult.user,
+      userId: authResult.user?.id,
+      userEmail: authResult.user?.email,
+      error: authResult.error,
+      debug: authResult.debug,
+    })
+    
+    if (authResult.error || !authResult.user) {
+      console.log('Authentication failed:', authResult.error)
       console.log('=== API LINKS GET DEBUG END ===')
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+      
+      // Return more detailed error for debugging
+      return NextResponse.json(createAuthErrorResponse(authResult), { status: 401 })
     }
 
     console.log('=== API LINKS GET DEBUG END ===')
+    
+    // Get supabase client for processing
+    const supabase = await createApiClient()
+    
     // Process the get links request with the authenticated user
-    return await processGetLinksRequest(request, user, supabase)
+    return await processGetLinksRequest(request, authResult.user, supabase)
   } catch (error) {
     console.error("API error:", error)
     console.log('=== API LINKS GET DEBUG END ===')
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }
+}
+
+// Handle preflight requests
+export async function OPTIONS(request: NextRequest) {
+  return new NextResponse(null, {
+    status: 200,
+    headers: {
+      'Access-Control-Allow-Origin': process.env.NODE_ENV === 'production' 
+        ? 'https://knuckle-link.vercel.app' 
+        : 'http://localhost:3000',
+      'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization, Cookie',
+      'Access-Control-Allow-Credentials': 'true',
+    },
+  })
 }

@@ -23,13 +23,15 @@ export async function updateSession(request: NextRequest) {
             request,
           })
           cookiesToSet.forEach(({ name, value, options }) => {
-            // Ensure cookies are set with proper security settings
+            // Ensure cookies are set with proper security settings for production
             const cookieOptions = {
               ...options,
               secure: process.env.NODE_ENV === 'production',
               sameSite: 'lax' as const,
               httpOnly: false, // Allow client-side access for auth cookies
               path: '/',
+              // Don't set domain in production to allow subdomain access
+              ...(process.env.NODE_ENV !== 'production' && { domain: undefined }),
             }
             supabaseResponse.cookies.set(name, value, cookieOptions)
           })

@@ -41,13 +41,30 @@ export async function createApiClient() {
   }
 
   return createServerClient(supabaseUrl, supabaseAnonKey, {
+    auth: {
+      persistSession: true, // Enable session persistence for API routes
+      autoRefreshToken: true,
+      detectSessionInUrl: false,
+    },
     cookies: {
       getAll() {
         return cookieStore.getAll()
       },
       setAll(cookiesToSet) {
         try {
-          cookiesToSet.forEach(({ name, value, options }) => cookieStore.set(name, value, options))
+          cookiesToSet.forEach(({ name, value, options }) => {
+            // Enhanced cookie options for production
+            const cookieOptions = {
+              ...options,
+              secure: process.env.NODE_ENV === 'production',
+              sameSite: 'lax' as const,
+              httpOnly: false,
+              path: '/',
+              // Don't set domain to allow proper cookie handling
+              domain: undefined,
+            }
+            cookieStore.set(name, value, cookieOptions)
+          })
         } catch (error) {
           // Log cookie setting errors for debugging
           console.error('Cookie setting error in API route:', error)
