@@ -83,6 +83,52 @@ export default function TestAuthPage() {
     }
   };
 
+  const testAuthMethods = async () => {
+    setLoading(true);
+    setResult(null);
+
+    try {
+      // Test GET
+      const getResponse = await fetch("/api/test-auth-methods", {
+        method: "GET",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      const getData = await getResponse.json();
+
+      // Test POST
+      const postResponse = await fetch("/api/test-auth-methods", {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      const postData = await postResponse.json();
+
+      setResult({
+        get: getData,
+        post: postData,
+        comparison: {
+          getCookies: getData.cookies?.count || 0,
+          postCookies: postData.cookies?.count || 0,
+          cookiesMatch:
+            JSON.stringify(getData.cookies) ===
+            JSON.stringify(postData.cookies),
+        },
+      });
+    } catch (error) {
+      setResult({
+        success: false,
+        error: error instanceof Error ? error.message : "Unknown error",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="container mx-auto p-8">
       <Card className="max-w-4xl mx-auto">
@@ -107,6 +153,13 @@ export default function TestAuthPage() {
               variant="outline"
             >
               {loading ? "Testing..." : "Debug Cookies"}
+            </Button>
+            <Button
+              onClick={testAuthMethods}
+              disabled={loading}
+              variant="destructive"
+            >
+              {loading ? "Testing..." : "Compare GET vs POST"}
             </Button>
           </div>
 
