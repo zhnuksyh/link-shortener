@@ -13,6 +13,18 @@ import { Link2, BarChart3 } from "lucide-react";
 import type { Link, GetLinksResponse } from "@/types/link";
 
 export default function DashboardPage() {
+  // Temporarily return a simple page for deployment testing
+  return (
+    <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="text-center">
+        <h1 className="text-2xl font-bold mb-4">Dashboard</h1>
+        <p className="text-muted-foreground">Dashboard is temporarily disabled for deployment testing.</p>
+      </div>
+    </div>
+  )
+}
+
+function DashboardPageOriginal() {
   const [user, setUser] = useState<any>(null);
   const [links, setLinks] = useState<Link[]>([]);
   const [isLoading, setIsLoading] = useState(true);
