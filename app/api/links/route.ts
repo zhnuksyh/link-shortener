@@ -1,8 +1,6 @@
-import { createApiClient } from "@/lib/supabase/server"
+import { createClient } from "@/lib/supabase/server"
 import { isValidUrl, normalizeUrl } from "@/lib/utils/url-validator"
 import { createTinyURLShortLink } from "@/lib/services/tinyurl"
-import { authenticateUser, createAuthErrorResponse } from "@/lib/auth-helper"
-// Removed import for non-existent short-code-generator
 import { type NextRequest, NextResponse } from "next/server"
 import type { User } from "@supabase/supabase-js"
 
@@ -186,104 +184,50 @@ async function processGetLinksRequest(request: NextRequest, user: User, supabase
 
 export async function POST(request: NextRequest) {
   try {
-    // Enhanced debugging
-    console.log('=== API LINKS POST DEBUG START ===')
-    console.log('Environment check:', {
-      NODE_ENV: process.env.NODE_ENV,
-      hasSupabaseUrl: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
-      hasSupabaseKey: !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-      supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL?.substring(0, 30) + '...',
-    })
+    const supabase = await createClient()
     
-    // Log request headers for debugging
-    console.log('Request headers:', {
-      origin: request.headers.get('origin'),
-      referer: request.headers.get('referer'),
-      userAgent: request.headers.get('user-agent')?.substring(0, 50) + '...',
-      cookie: request.headers.get('cookie')?.substring(0, 100) + '...',
-    })
-    
-    // Use the authentication helper
-    const authResult = await authenticateUser(request)
-    
-    console.log('Auth result:', {
-      hasUser: !!authResult.user,
-      userId: authResult.user?.id,
-      userEmail: authResult.user?.email,
-      error: authResult.error,
-      debug: authResult.debug,
-    })
-    
-    if (authResult.error || !authResult.user) {
-      console.log('Authentication failed:', authResult.error)
-      console.log('=== API LINKS POST DEBUG END ===')
-      
-      // Return more detailed error for debugging
-      return NextResponse.json(createAuthErrorResponse(authResult), { status: 401 })
-    }
+    // Get the authenticated user
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser()
 
-    console.log('=== API LINKS POST DEBUG END ===')
-    
-    // Get supabase client for processing
-    const supabase = await createApiClient()
+    if (authError || !user) {
+      return NextResponse.json({ 
+        error: "Unauthorized",
+        details: authError?.message || "No user found in session"
+      }, { status: 401 })
+    }
     
     // Process the links request with the authenticated user
-    return await processLinksRequest(request, authResult.user, supabase)
+    return await processLinksRequest(request, user, supabase)
   } catch (error) {
     console.error("API error:", error)
-    console.log('=== API LINKS POST DEBUG END ===')
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }
 }
 
 export async function GET(request: NextRequest) {
   try {
-    // Enhanced debugging
-    console.log('=== API LINKS GET DEBUG START ===')
-    console.log('Environment check:', {
-      NODE_ENV: process.env.NODE_ENV,
-      hasSupabaseUrl: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
-      hasSupabaseKey: !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-      supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL?.substring(0, 30) + '...',
-    })
+    const supabase = await createClient()
     
-    // Log request headers for debugging
-    console.log('Request headers:', {
-      origin: request.headers.get('origin'),
-      referer: request.headers.get('referer'),
-      userAgent: request.headers.get('user-agent')?.substring(0, 50) + '...',
-      cookie: request.headers.get('cookie')?.substring(0, 100) + '...',
-    })
-    
-    // Use the authentication helper
-    const authResult = await authenticateUser(request)
-    
-    console.log('Auth result:', {
-      hasUser: !!authResult.user,
-      userId: authResult.user?.id,
-      userEmail: authResult.user?.email,
-      error: authResult.error,
-      debug: authResult.debug,
-    })
-    
-    if (authResult.error || !authResult.user) {
-      console.log('Authentication failed:', authResult.error)
-      console.log('=== API LINKS GET DEBUG END ===')
-      
-      // Return more detailed error for debugging
-      return NextResponse.json(createAuthErrorResponse(authResult), { status: 401 })
-    }
+    // Get the authenticated user
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser()
 
-    console.log('=== API LINKS GET DEBUG END ===')
-    
-    // Get supabase client for processing
-    const supabase = await createApiClient()
+    if (authError || !user) {
+      return NextResponse.json({ 
+        error: "Unauthorized",
+        details: authError?.message || "No user found in session"
+      }, { status: 401 })
+    }
     
     // Process the get links request with the authenticated user
-    return await processGetLinksRequest(request, authResult.user, supabase)
+    return await processGetLinksRequest(request, user, supabase)
   } catch (error) {
     console.error("API error:", error)
-    console.log('=== API LINKS GET DEBUG END ===')
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }
 }
