@@ -41,11 +41,6 @@ export async function createApiClient() {
   }
 
   return createServerClient(supabaseUrl, supabaseAnonKey, {
-    auth: {
-      persistSession: true, // Enable session persistence for proper cookie handling
-      autoRefreshToken: true,
-      detectSessionInUrl: false,
-    },
     cookies: {
       getAll() {
         return cookieStore.getAll()
@@ -53,18 +48,7 @@ export async function createApiClient() {
       setAll(cookiesToSet) {
         try {
           cookiesToSet.forEach(({ name, value, options }) => {
-            // Enhanced cookie options for production
-            const cookieOptions = {
-              ...options,
-              secure: process.env.NODE_ENV === 'production',
-              sameSite: 'lax' as const,
-              httpOnly: false,
-              path: '/',
-              // Explicitly set domain for production
-              domain: process.env.NODE_ENV === 'production' ? '.vercel.app' : undefined,
-              maxAge: 60 * 60 * 24 * 7, // 7 days
-            }
-            cookieStore.set(name, value, cookieOptions)
+            cookieStore.set(name, value, options)
           })
         } catch (error) {
           // Log cookie setting errors for debugging
