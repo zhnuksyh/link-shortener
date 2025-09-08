@@ -3,7 +3,6 @@
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { usePathname } from "next/navigation";
 
 interface SiteHeaderProps {
   isAuthenticated?: boolean;
@@ -14,9 +13,6 @@ export function SiteHeader({
   isAuthenticated = false,
   userEmail,
 }: SiteHeaderProps) {
-  const pathname = usePathname();
-  const isDashboard = pathname === "/dashboard";
-
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 animate-slide-up">
       <div className="w-full flex h-16 items-center justify-center px-4">
@@ -43,9 +39,7 @@ export function SiteHeader({
                   asChild
                   className="animate-slide-in-right animate-stagger-2"
                 >
-                  <Link href={isDashboard ? "/" : "/dashboard"}>
-                    {isDashboard ? "Homepage" : "Dashboard"}
-                  </Link>
+                  <Link href="/dashboard">Dashboard</Link>
                 </Button>
                 <Button
                   variant="outline"
