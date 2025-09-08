@@ -42,8 +42,8 @@ export async function createApiClient() {
 
   return createServerClient(supabaseUrl, supabaseAnonKey, {
     auth: {
-      persistSession: true, // Enable session persistence for API routes
-      autoRefreshToken: true,
+      persistSession: false, // Disable session persistence to force fresh session reading
+      autoRefreshToken: false,
       detectSessionInUrl: false,
     },
     cookies: {
