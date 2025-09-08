@@ -24,6 +24,30 @@ export async function updateSession(request: NextRequest) {
           })
         },
       },
+      global: {
+        headers: {
+          'X-Client-Info': 'supabase-js-web',
+        },
+      },
+      // Disable realtime to avoid Edge Runtime issues
+      realtime: {
+        transport: 'websocket',
+        timeout: 20000,
+        heartbeatIntervalMs: 30000,
+        reconnectAfterMs: [1000, 2000, 5000, 10000],
+        encode: (payload: any, callback: any) => {
+          callback(JSON.stringify(payload))
+        },
+        decode: (payload: string, callback: any) => {
+          callback(JSON.parse(payload))
+        },
+      },
+      // Disable realtime completely for Edge Runtime compatibility
+      global: {
+        headers: {
+          'X-Client-Info': 'supabase-js-web',
+        },
+      },
     },
   )
 

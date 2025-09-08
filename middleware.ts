@@ -2,7 +2,9 @@ import { updateSession } from "@/lib/supabase/middleware"
 import type { NextRequest } from "next/server"
 
 export async function middleware(request: NextRequest) {
-  return await updateSession(request)
+  // Temporarily disable middleware for deployment testing
+  return new Response(null, { status: 200 })
+  // return await updateSession(request)
 }
 
 export const config = {
@@ -17,4 +19,5 @@ export const config = {
      */
     "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
   ],
+  runtime: 'nodejs',
 }
