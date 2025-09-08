@@ -16,12 +16,14 @@ export function createClient() {
     },
     cookies: {
       getAll() {
+        if (typeof window === 'undefined') return []
         return document.cookie.split(';').map(cookie => {
           const [name, value] = cookie.trim().split('=')
           return { name: name || '', value: value || '' }
         }).filter(cookie => cookie.name)
       },
       setAll(cookiesToSet) {
+        if (typeof window === 'undefined') return
         cookiesToSet.forEach(({ name, value, options }) => {
           const cookieOptions = {
             ...options,

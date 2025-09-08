@@ -7,8 +7,11 @@ import { Button } from "@/components/ui/button";
 export default function CookieInspectorPage() {
   const [cookies, setCookies] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   const inspectCookies = () => {
+    if (typeof window === "undefined") return;
+
     setLoading(true);
 
     // Get all cookies from document.cookie
@@ -31,6 +34,8 @@ export default function CookieInspectorPage() {
   };
 
   const clearCookies = () => {
+    if (typeof window === "undefined") return;
+
     // Clear all cookies by setting them to expire in the past
     document.cookie.split(";").forEach((cookie) => {
       const eqPos = cookie.indexOf("=");
@@ -47,8 +52,26 @@ export default function CookieInspectorPage() {
   };
 
   useEffect(() => {
-    inspectCookies();
+    setMounted(true);
+    if (typeof window !== "undefined") {
+      inspectCookies();
+    }
   }, []);
+
+  if (!mounted) {
+    return (
+      <div className="container mx-auto p-8">
+        <Card className="max-w-4xl mx-auto">
+          <CardHeader>
+            <CardTitle>Cookie Inspector</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p>Loading...</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto p-8">
@@ -102,7 +125,9 @@ export default function CookieInspectorPage() {
           <div className="mt-6">
             <h3 className="text-lg font-semibold mb-2">Raw Cookie String:</h3>
             <pre className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg overflow-auto text-sm">
-              {document.cookie || "No cookies found"}
+              {typeof window !== "undefined"
+                ? document.cookie || "No cookies found"
+                : "Loading..."}
             </pre>
           </div>
 
@@ -110,14 +135,22 @@ export default function CookieInspectorPage() {
             <h3 className="text-lg font-semibold mb-2">Environment Info:</h3>
             <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg">
               <div>
-                <strong>Domain:</strong> {window.location.hostname}
+                <strong>Domain:</strong>{" "}
+                {typeof window !== "undefined"
+                  ? window.location.hostname
+                  : "Loading..."}
               </div>
               <div>
-                <strong>Protocol:</strong> {window.location.protocol}
+                <strong>Protocol:</strong>{" "}
+                {typeof window !== "undefined"
+                  ? window.location.protocol
+                  : "Loading..."}
               </div>
               <div>
                 <strong>User Agent:</strong>{" "}
-                {navigator.userAgent.substring(0, 100)}...
+                {typeof window !== "undefined"
+                  ? navigator.userAgent.substring(0, 100) + "..."
+                  : "Loading..."}
               </div>
             </div>
           </div>
