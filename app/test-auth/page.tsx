@@ -58,6 +58,31 @@ export default function TestAuthPage() {
     }
   };
 
+  const testCookieDebug = async () => {
+    setLoading(true);
+    setResult(null);
+
+    try {
+      const response = await fetch("/api/debug-cookies", {
+        method: "GET",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      const data = await response.json();
+      setResult(data);
+    } catch (error) {
+      setResult({
+        success: false,
+        error: error instanceof Error ? error.message : "Unknown error",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="container mx-auto p-8">
       <Card className="max-w-4xl mx-auto">
@@ -65,7 +90,7 @@ export default function TestAuthPage() {
           <CardTitle>Authentication Test</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex gap-4">
+          <div className="flex gap-4 flex-wrap">
             <Button onClick={testAuth} disabled={loading} variant="default">
               {loading ? "Testing..." : "Test Auth Endpoint"}
             </Button>
@@ -75,6 +100,13 @@ export default function TestAuthPage() {
               variant="secondary"
             >
               {loading ? "Testing..." : "Test Links API"}
+            </Button>
+            <Button
+              onClick={testCookieDebug}
+              disabled={loading}
+              variant="outline"
+            >
+              {loading ? "Testing..." : "Debug Cookies"}
             </Button>
           </div>
 

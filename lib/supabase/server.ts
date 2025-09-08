@@ -42,8 +42,8 @@ export async function createApiClient() {
 
   return createServerClient(supabaseUrl, supabaseAnonKey, {
     auth: {
-      persistSession: false, // Disable session persistence to force fresh session reading
-      autoRefreshToken: false,
+      persistSession: true, // Enable session persistence for proper cookie handling
+      autoRefreshToken: true,
       detectSessionInUrl: false,
     },
     cookies: {
@@ -60,8 +60,9 @@ export async function createApiClient() {
               sameSite: 'lax' as const,
               httpOnly: false,
               path: '/',
-              // Don't set domain to allow proper cookie handling
-              domain: undefined,
+              // Explicitly set domain for production
+              domain: process.env.NODE_ENV === 'production' ? '.vercel.app' : undefined,
+              maxAge: 60 * 60 * 24 * 7, // 7 days
             }
             cookieStore.set(name, value, cookieOptions)
           })

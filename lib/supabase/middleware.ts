@@ -11,7 +11,9 @@ export async function updateSession(request: NextRequest) {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       auth: {
-        persistSession: false, // Disable session persistence on server-side
+        persistSession: true, // Enable session persistence for proper cookie handling
+        autoRefreshToken: true,
+        detectSessionInUrl: false,
       },
       cookies: {
         getAll() {
@@ -23,15 +25,16 @@ export async function updateSession(request: NextRequest) {
             request,
           })
           cookiesToSet.forEach(({ name, value, options }) => {
-            // Ensure cookies are set with proper security settings for production
+            // Enhanced cookie options for production
             const cookieOptions = {
               ...options,
               secure: process.env.NODE_ENV === 'production',
               sameSite: 'lax' as const,
               httpOnly: false, // Allow client-side access for auth cookies
               path: '/',
-              // Don't set domain in production to allow subdomain access
-              ...(process.env.NODE_ENV !== 'production' && { domain: undefined }),
+              // Explicitly set domain for production
+              domain: process.env.NODE_ENV === 'production' ? '.vercel.app' : undefined,
+              maxAge: 60 * 60 * 24 * 7, // 7 days
             }
             supabaseResponse.cookies.set(name, value, cookieOptions)
           })
