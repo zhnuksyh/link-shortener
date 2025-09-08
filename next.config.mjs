@@ -9,6 +9,9 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
+  experimental: {
+    nodeMiddleware: true,
+  },
   async headers() {
     return [
       {

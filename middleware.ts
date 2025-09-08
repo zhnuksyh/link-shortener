@@ -2,9 +2,7 @@ import { updateSession } from "@/lib/supabase/middleware"
 import type { NextRequest } from "next/server"
 
 export async function middleware(request: NextRequest) {
-  // Temporarily disable middleware for deployment testing
-  return new Response(null, { status: 200 })
-  // return await updateSession(request)
+  return await updateSession(request)
 }
 
 export const config = {
