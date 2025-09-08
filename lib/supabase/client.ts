@@ -32,6 +32,8 @@ export function createClient() {
             path: '/',
             // Don't set domain to allow proper cookie handling
             domain: undefined,
+            // Ensure cookies persist for 7 days
+            maxAge: options?.maxAge || 60 * 60 * 24 * 7, // 7 days
           }
           
           let cookieString = `${name}=${value}`
