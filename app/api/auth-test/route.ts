@@ -1,4 +1,4 @@
-import { authenticateUser } from "@/lib/auth-helper"
+import { createClient } from "@/lib/supabase/server"
 import { NextRequest, NextResponse } from "next/server"
 
 export async function GET(request: NextRequest) {
@@ -21,27 +21,34 @@ export async function GET(request: NextRequest) {
       cookie: request.headers.get('cookie')?.substring(0, 200) + '...',
     })
     
-    // Test authentication
-    const authResult = await authenticateUser(request)
+    // Test authentication using direct Supabase client
+    const supabase = await createClient()
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser()
     
     console.log('Auth test result:', {
-      hasUser: !!authResult.user,
-      userId: authResult.user?.id,
-      userEmail: authResult.user?.email,
-      error: authResult.error,
-      debug: authResult.debug,
+      hasUser: !!user,
+      userId: user?.id,
+      userEmail: user?.email,
+      error: authError?.message,
     })
     
     console.log('=== AUTH TEST DEBUG END ===')
     
     return NextResponse.json({
-      success: !!authResult.user,
-      user: authResult.user ? {
-        id: authResult.user.id,
-        email: authResult.user.email,
+      success: !!user,
+      user: user ? {
+        id: user.id,
+        email: user.email,
       } : null,
-      error: authResult.error,
-      debug: authResult.debug,
+      error: authError?.message || null,
+      debug: {
+        hasCookies: cookies.length > 0,
+        cookieNames: cookies.map(c => c.name),
+        cookieCount: cookies.length,
+      },
       timestamp: new Date().toISOString(),
     })
   } catch (error) {
