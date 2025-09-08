@@ -1,6 +1,6 @@
 import { isValidUrl, normalizeUrl } from "@/lib/utils/url-validator"
 import { createTinyURLShortLink } from "@/lib/services/tinyurl"
-import { createApiClient } from "@/lib/supabase/server"
+import { createClient } from "@/lib/supabase/server"
 import { type NextRequest, NextResponse } from "next/server"
 import type { User } from "@supabase/supabase-js"
 
@@ -85,7 +85,7 @@ export async function POST(request: NextRequest) {
       valueLength: c.value?.length || 0
     })))
     
-    const supabase = await createApiClient()
+    const supabase = await createClient()
 
     // Get the authenticated user - this is the most secure method
     const {
