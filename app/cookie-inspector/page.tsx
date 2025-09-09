@@ -41,12 +41,6 @@ export default function CookieInspectorPage() {
       const eqPos = cookie.indexOf("=");
       const name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie;
       document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/";
-      document.cookie =
-        name +
-        "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=.vercel.app";
-      document.cookie =
-        name +
-        "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=knuckle-link.vercel.app";
     });
     setCookies([]);
   };

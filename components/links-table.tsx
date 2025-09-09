@@ -25,6 +25,7 @@ import {
   MoreHorizontal,
   Power,
   Search,
+  Share2,
   Trash2,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -64,6 +65,41 @@ export function LinksTable({
         title: "Failed to copy",
         description: "Please copy the URL manually",
         variant: "destructive",
+      });
+    }
+  };
+
+  const shareLink = async (url: string, title?: string) => {
+    try {
+      // Check if Web Share API is supported
+      if (navigator.share) {
+        await navigator.share({
+          title: title || "Check out this link",
+          text: title || "Here's a shortened link for you",
+          url: url,
+        });
+        toast({
+          title: "Shared!",
+          description: "Link shared successfully",
+        });
+      } else {
+        // Fallback to clipboard copy
+        await copyToClipboard(url);
+        toast({
+          title: "Copied!",
+          description: "Link copied to clipboard (sharing not supported)",
+        });
+      }
+    } catch (error) {
+      if (error instanceof Error && error.name === "AbortError") {
+        // User cancelled the share dialog
+        return;
+      }
+      // Fallback to clipboard copy on error
+      await copyToClipboard(url);
+      toast({
+        title: "Copied!",
+        description: "Link copied to clipboard",
       });
     }
   };
@@ -191,6 +227,13 @@ export function LinksTable({
                           >
                             <Copy className="mr-2 h-4 w-4" />
                             Copy Link
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={() => shareLink(link.shortUrl, link.title)}
+                            className="cursor-pointer"
+                          >
+                            <Share2 className="mr-2 h-4 w-4" />
+                            Share Link
                           </DropdownMenuItem>
                           <DropdownMenuItem
                             onClick={() => window.open(link.shortUrl, "_blank")}

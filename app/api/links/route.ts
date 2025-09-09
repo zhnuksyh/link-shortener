@@ -51,6 +51,75 @@ async function processLinksRequest(request: NextRequest, user: User, supabase: a
     const { shortUrl, alias, isExternal } = await createTinyURLShortLink(normalizedUrl, user.id)
     console.log('TinyURL created successfully:', { shortUrl, alias, isExternal })
 
+    // Check if this TinyURL alias already exists for any user
+    // This handles the case where TinyURL returns the same alias for the same URL
+    const { data: existingAliasLink, error: aliasCheckError } = await supabase
+      .from("links")
+      .select("*")
+      .eq("tinyurl_alias", alias)
+      .maybeSingle()
+
+    if (aliasCheckError && aliasCheckError.code !== 'PGRST116') {
+      console.log('Error checking for existing alias:', aliasCheckError)
+    }
+
+    // If the alias already exists, check if it's for the same URL
+    if (existingAliasLink) {
+      if (existingAliasLink.original_url === normalizedUrl) {
+        // Same URL, same alias - this is expected TinyURL behavior
+        // Check if this user already has this link
+        if (existingAliasLink.user_id === user.id) {
+          // User already has this link, return the existing one
+          return NextResponse.json({
+            id: existingAliasLink.id,
+            originalUrl: existingAliasLink.original_url,
+            shortCode: existingAliasLink.tinyurl_alias,
+            shortUrl: existingAliasLink.external_short_url,
+            title: existingAliasLink.title,
+            createdAt: existingAliasLink.created_at,
+          })
+        } else {
+          // Different user, same URL - create a new record for this user
+          // This allows multiple users to track the same shortened URL
+          const insertData = {
+            original_url: normalizedUrl,
+            short_code: alias.length <= 10 ? alias : null,
+            user_id: user.id,
+            tinyurl_alias: alias,
+            external_short_url: shortUrl,
+            title: title?.trim() || null,
+          }
+
+          const { data: newLink, error: insertError } = await supabase
+            .from("links")
+            .insert(insertData)
+            .select()
+            .single()
+
+          if (insertError) {
+            console.error("Database insert error for existing alias:", insertError)
+            return NextResponse.json({ 
+              error: "Failed to save the shortened link to your account.",
+              details: insertError.message 
+            }, { status: 500 })
+          }
+
+          return NextResponse.json({
+            id: newLink.id,
+            originalUrl: newLink.original_url,
+            shortCode: newLink.tinyurl_alias,
+            shortUrl: newLink.external_short_url,
+            title: newLink.title,
+            createdAt: newLink.created_at,
+          })
+        }
+      } else {
+        // Same alias but different URL - this shouldn't happen with TinyURL
+        // but we'll handle it gracefully by creating a new record
+        console.warn('TinyURL alias collision detected:', { alias, existingUrl: existingAliasLink.original_url, newUrl: normalizedUrl })
+      }
+    }
+
     // Create new shortened link - only store TinyURL data
     const insertData = {
       original_url: normalizedUrl,
@@ -237,9 +306,7 @@ export async function OPTIONS(request: NextRequest) {
   return new NextResponse(null, {
     status: 200,
     headers: {
-      'Access-Control-Allow-Origin': process.env.NODE_ENV === 'production' 
-        ? 'https://knuckle-link.vercel.app' 
-        : 'http://localhost:3000',
+      'Access-Control-Allow-Origin': process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000',
       'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
       'Access-Control-Allow-Headers': 'Content-Type, Authorization, Cookie',
       'Access-Control-Allow-Credentials': 'true',

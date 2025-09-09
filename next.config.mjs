@@ -17,9 +17,7 @@ const nextConfig = {
         headers: [
           {
             key: 'Access-Control-Allow-Origin',
-            value: process.env.NODE_ENV === 'production' 
-              ? 'https://knuckle-link.vercel.app' 
-              : 'http://localhost:3000',
+            value: process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000',
           },
           {
             key: 'Access-Control-Allow-Methods',

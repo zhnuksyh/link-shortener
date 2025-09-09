@@ -77,6 +77,41 @@ export function UrlShortenerForm({
     }
   };
 
+  const shareLink = async (url: string, title?: string) => {
+    try {
+      // Check if Web Share API is supported
+      if (navigator.share) {
+        await navigator.share({
+          title: title || "Check out this link",
+          text: title || "Here's a shortened link for you",
+          url: url,
+        });
+        toast({
+          title: "Shared!",
+          description: "Link shared successfully",
+        });
+      } else {
+        // Fallback to clipboard copy
+        await copyToClipboard(url);
+        toast({
+          title: "Copied!",
+          description: "Link copied to clipboard (sharing not supported)",
+        });
+      }
+    } catch (error) {
+      if (error instanceof Error && error.name === "AbortError") {
+        // User cancelled the share dialog
+        return;
+      }
+      // Fallback to clipboard copy on error
+      await copyToClipboard(url);
+      toast({
+        title: "Copied!",
+        description: "Link copied to clipboard",
+      });
+    }
+  };
+
   const pasteFromClipboard = async () => {
     try {
       const text = await navigator.clipboard.readText();
@@ -273,13 +308,7 @@ export function UrlShortenerForm({
                     variant="outline"
                     size="sm"
                     className="h-9 px-4 cursor-pointer animate-hover-scale"
-                    onClick={() => {
-                      navigator.clipboard.writeText(result.shortUrl);
-                      toast({
-                        title: "Copied!",
-                        description: "Link copied to clipboard",
-                      });
-                    }}
+                    onClick={() => shareLink(result.shortUrl, result.title)}
                   >
                     <Share2 className="h-4 w-4 mr-2" />
                     Share
