@@ -12,7 +12,9 @@ export async function updateSession(request: NextRequest) {
     {
       cookies: {
         getAll() {
-          return request.cookies.getAll()
+          const cookies = request.cookies.getAll()
+          console.log('Middleware getAll cookies:', cookies.map(c => ({ name: c.name, hasValue: !!c.value })))
+          return cookies
         },
         setAll(cookiesToSet) {
           console.log('Middleware setting cookies:', cookiesToSet.map(c => ({ name: c.name, hasValue: !!c.value })))
@@ -46,9 +48,12 @@ export async function updateSession(request: NextRequest) {
     path: request.nextUrl.pathname,
     hasUser: !!user,
     userEmail: user?.email,
-    cookies: request.cookies.getAll().map(c => ({ name: c.name, hasValue: !!c.value }))
+    cookies: request.cookies.getAll().map(c => ({ name: c.name, hasValue: !!c.value })),
+    rawCookieHeader: request.headers.get('cookie'),
+    allCookies: request.cookies.getAll()
   })
 
+  // Temporarily allow dashboard access for debugging
   if (
     !user &&
     !request.nextUrl.pathname.startsWith("/auth") &&
@@ -56,7 +61,8 @@ export async function updateSession(request: NextRequest) {
     !request.nextUrl.pathname.startsWith("/s/") && // Allow access to shortened links
     !request.nextUrl.pathname.startsWith("/api/") && // Allow access to API routes
     !request.nextUrl.pathname.startsWith("/cookie-inspector") && // Allow access to cookie inspector for testing
-    !request.nextUrl.pathname.startsWith("/test-auth") // Allow access to test auth for testing
+    !request.nextUrl.pathname.startsWith("/test-auth") && // Allow access to test auth for testing
+    request.nextUrl.pathname !== "/dashboard" // Temporarily allow dashboard access
   ) {
     // no user, potentially respond by redirecting the user to the login page
     const url = request.nextUrl.clone()
