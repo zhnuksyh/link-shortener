@@ -16,6 +16,21 @@ export async function createClient() {
       get(name: string) {
         const cookie = cookieStore.get(name)
         console.log(`Server get cookie ${name}:`, { hasValue: !!cookie?.value, value: cookie?.value?.substring(0, 20) + '...' })
+        
+        // If the specific cookie is not found, try to find any Supabase cookie
+        if (!cookie?.value && name.includes('sb-')) {
+          const allCookies = cookieStore.getAll()
+          const supabaseCookies = allCookies.filter(c => c.name.includes('sb-'))
+          console.log(`Looking for Supabase cookies, found:`, supabaseCookies.map(c => ({ name: c.name, hasValue: !!c.value })))
+          
+          // Try to find a cookie that might match
+          const matchingCookie = supabaseCookies.find(c => c.name.includes('auth-token'))
+          if (matchingCookie) {
+            console.log(`Found matching auth token cookie: ${matchingCookie.name}`)
+            return matchingCookie.value
+          }
+        }
+        
         return cookie?.value
       },
       set(name: string, value: string, options: any) {
@@ -26,7 +41,8 @@ export async function createClient() {
             secure: process.env.NODE_ENV === 'production',
             sameSite: 'lax',
             httpOnly: false,
-            path: '/'
+            path: '/',
+            domain: process.env.NODE_ENV === 'production' ? undefined : undefined // Let browser handle domain
           })
         } catch {
           // The `set` method was called from a Server Component.
@@ -43,7 +59,8 @@ export async function createClient() {
             secure: process.env.NODE_ENV === 'production',
             sameSite: 'lax',
             httpOnly: false,
-            path: '/'
+            path: '/',
+            domain: process.env.NODE_ENV === 'production' ? undefined : undefined // Let browser handle domain
           })
         } catch {
           // The `remove` method was called from a Server Component.

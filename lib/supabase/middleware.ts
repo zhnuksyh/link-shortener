@@ -25,7 +25,8 @@ export async function updateSession(request: NextRequest) {
               secure: process.env.NODE_ENV === 'production',
               sameSite: 'lax',
               httpOnly: false,
-              path: '/'
+              path: '/',
+              domain: process.env.NODE_ENV === 'production' ? undefined : undefined // Let browser handle domain
             })
           })
         },
