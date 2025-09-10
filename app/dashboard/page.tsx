@@ -26,21 +26,58 @@ export default function DashboardPage() {
 
   useEffect(() => {
     const checkUser = async () => {
-      const {
-        data: { user },
-        error,
-      } = await supabase.auth.getUser();
+      try {
+        const {
+          data: { user },
+          error,
+        } = await supabase.auth.getUser();
 
-      if (error || !user) {
+        console.log("Dashboard auth check:", {
+          hasUser: !!user,
+          error: error?.message,
+        });
+
+        if (error || !user) {
+          console.log("No user found, redirecting to login");
+          router.push("/auth/login");
+          return;
+        }
+
+        setUser(user);
+        await fetchLinks();
+      } catch (error) {
+        console.error("Auth check error:", error);
+        router.push("/auth/login");
+      }
+    };
+
+    // Initial check
+    checkUser();
+
+    // Listen for auth state changes
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log("Auth state changed:", event, session?.user?.email);
+
+      if (event === "SIGNED_OUT" || !session) {
+        console.log("User signed out, redirecting to login");
         router.push("/auth/login");
         return;
       }
 
-      setUser(user);
-      await fetchLinks();
-    };
+      if (event === "SIGNED_IN" || event === "TOKEN_REFRESHED") {
+        console.log("User authenticated, updating state");
+        setUser(session.user);
+        if (event === "SIGNED_IN") {
+          await fetchLinks();
+        }
+      }
+    });
 
-    checkUser();
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
   const fetchLinks = async () => {

@@ -33,13 +33,27 @@ export default function LoginPage() {
     setError(null);
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
+
+      console.log("Login result:", {
+        hasUser: !!data.user,
+        hasSession: !!data.session,
+        error: error?.message,
+      });
+
       if (error) throw error;
-      router.push("/dashboard");
+
+      if (data.user && data.session) {
+        console.log("Login successful, redirecting to dashboard");
+        router.push("/dashboard");
+      } else {
+        throw new Error("Login failed - no session created");
+      }
     } catch (error: unknown) {
+      console.error("Login error:", error);
       setError(error instanceof Error ? error.message : "An error occurred");
     } finally {
       setIsLoading(false);

@@ -15,12 +15,19 @@ export async function updateSession(request: NextRequest) {
           return request.cookies.getAll()
         },
         setAll(cookiesToSet) {
+          console.log('Middleware setting cookies:', cookiesToSet.map(c => ({ name: c.name, hasValue: !!c.value })))
           cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
           supabaseResponse = NextResponse.next({
             request,
           })
           cookiesToSet.forEach(({ name, value, options }) => {
-            supabaseResponse.cookies.set(name, value, options)
+            supabaseResponse.cookies.set(name, value, {
+              ...options,
+              secure: process.env.NODE_ENV === 'production',
+              sameSite: 'lax',
+              httpOnly: false,
+              path: '/'
+            })
           })
         },
       },
@@ -34,6 +41,13 @@ export async function updateSession(request: NextRequest) {
   const {
     data: { user },
   } = await supabase.auth.getUser()
+  
+  console.log('Middleware auth check:', {
+    path: request.nextUrl.pathname,
+    hasUser: !!user,
+    userEmail: user?.email,
+    cookies: request.cookies.getAll().map(c => ({ name: c.name, hasValue: !!c.value }))
+  })
 
   if (
     !user &&
