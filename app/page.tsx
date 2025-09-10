@@ -27,7 +27,7 @@ export default async function HomePage() {
           {/* Hero Section - Fixed position */}
           <div className="w-full text-center space-y-8 mb-16">
             <h1 className="text-5xl sm:text-6xl lg:text-7xl xl:text-8xl font-bold text-foreground tracking-tight animate-slide-up animate-stagger-1 text-glow-light-black">
-              Shorten your links, <br />
+              Shorten your link!, <br />
               <span className="text-primary animate-fade-in animate-stagger-2 text-glow-light">
                 Amplify your reach
               </span>
