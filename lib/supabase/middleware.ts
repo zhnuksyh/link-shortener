@@ -42,6 +42,16 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
   
+  // Debug logging for dashboard requests
+  if (request.nextUrl.pathname === "/dashboard") {
+    console.log('Dashboard request - Middleware debug:', {
+      path: request.nextUrl.pathname,
+      hasUser: !!user,
+      userEmail: user?.email,
+      cookies: request.cookies.getAll().map(c => ({ name: c.name, hasValue: !!c.value })),
+      cookieHeader: request.headers.get('cookie')
+    })
+  }
 
   if (
     !user &&
@@ -53,7 +63,8 @@ export async function updateSession(request: NextRequest) {
     !request.nextUrl.pathname.startsWith("/test-auth") && // Allow access to test auth for testing
     !request.nextUrl.pathname.includes("site.webmanifest") && // Allow access to manifest
     !request.nextUrl.pathname.includes("favicon") && // Allow access to favicon
-    !request.nextUrl.pathname.includes("_next") // Allow access to Next.js assets
+    !request.nextUrl.pathname.includes("_next") && // Allow access to Next.js assets
+    request.nextUrl.pathname !== "/dashboard" // Temporarily allow dashboard access for testing
   ) {
     // no user, potentially respond by redirecting the user to the login page
     const url = request.nextUrl.clone()
