@@ -16,3 +16,4 @@ ADD CONSTRAINT links_tinyurl_alias_user_unique UNIQUE (tinyurl_alias, user_id);
 -- Add comment explaining the change
 COMMENT ON CONSTRAINT links_tinyurl_alias_user_unique ON public.links IS 
 'Ensures each user can only have one record per TinyURL alias, but allows multiple users to have the same alias (when they shorten the same URL)';
+

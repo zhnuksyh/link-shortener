@@ -22,7 +22,9 @@ export async function createClient() {
             ...options,
             secure: process.env.NODE_ENV === 'production',
             sameSite: 'lax',
-            httpOnly: false
+            httpOnly: false,
+            // Remove domain parameter to let browser handle it automatically
+            // This fixes cookie issues in production deployment
           })
         } catch {
           // The `set` method was called from a Server Component.
