@@ -1,36 +1,71 @@
 import { createServerClient } from "@supabase/ssr"
 import { NextResponse, type NextRequest } from "next/server"
+import { cookies } from "next/headers"
 
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
     request,
   })
 
+  // Try to use the same approach as the server client
+  const cookieStore = await cookies()
+  
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        getAll() {
-          return request.cookies.getAll()
+        get(name: string) {
+          // First try the request cookies
+          const requestCookie = request.cookies.get(name)
+          if (requestCookie?.value) {
+            console.log(`Middleware get cookie ${name} from request:`, { hasValue: !!requestCookie.value })
+            return requestCookie.value
+          }
+          
+          // Fallback to cookie store
+          const cookie = cookieStore.get(name)
+          console.log(`Middleware get cookie ${name} from store:`, { hasValue: !!cookie?.value })
+          return cookie?.value
         },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
-          supabaseResponse = NextResponse.next({
-            request,
-          })
-          cookiesToSet.forEach(({ name, value, options }) => {
-            supabaseResponse.cookies.set(name, value, {
+        set(name: string, value: string, options: any) {
+          console.log(`Middleware set cookie ${name}:`, { hasValue: !!value })
+          try {
+            cookieStore.set(name, value, {
               ...options,
               secure: process.env.NODE_ENV === 'production',
               sameSite: 'lax',
               httpOnly: false,
               path: '/',
-              domain: process.env.NODE_ENV === 'production' ? undefined : undefined // Let browser handle domain
+              domain: process.env.NODE_ENV === 'production' ? undefined : undefined
             })
-          })
+          } catch {
+            // Ignore if called from middleware
+          }
+        },
+        remove(name: string, options: any) {
+          console.log(`Middleware remove cookie ${name}`)
+          try {
+            cookieStore.set(name, '', { 
+              ...options, 
+              maxAge: 0,
+              secure: process.env.NODE_ENV === 'production',
+              sameSite: 'lax',
+              httpOnly: false,
+              path: '/',
+              domain: process.env.NODE_ENV === 'production' ? undefined : undefined
+            })
+          } catch {
+            // Ignore if called from middleware
+          }
         },
       },
+      auth: {
+        persistSession: false, // Disable session persistence in middleware
+        autoRefreshToken: false, // Disable auto refresh in middleware
+        detectSessionInUrl: false,
+        flowType: 'pkce'
+      }
     },
   )
 
@@ -40,6 +75,7 @@ export async function updateSession(request: NextRequest) {
 
   const {
     data: { user },
+    error: userError
   } = await supabase.auth.getUser()
   
   // Debug logging for dashboard requests
@@ -48,8 +84,17 @@ export async function updateSession(request: NextRequest) {
       path: request.nextUrl.pathname,
       hasUser: !!user,
       userEmail: user?.email,
+      userError: userError?.message,
       cookies: request.cookies.getAll().map(c => ({ name: c.name, hasValue: !!c.value })),
       cookieHeader: request.headers.get('cookie')
+    })
+    
+    // Try to get session as well
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession()
+    console.log('Dashboard request - Session debug:', {
+      hasSession: !!session,
+      sessionError: sessionError?.message,
+      sessionUser: session?.user?.email
     })
   }
 
