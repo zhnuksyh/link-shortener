@@ -23,8 +23,7 @@ export async function createClient() {
             secure: process.env.NODE_ENV === 'production',
             sameSite: 'lax',
             httpOnly: false,
-            // Remove domain parameter to let browser handle it automatically
-            // This fixes cookie issues in production deployment
+            path: '/'
           })
         } catch {
           // The `set` method was called from a Server Component.
@@ -39,7 +38,8 @@ export async function createClient() {
             maxAge: 0,
             secure: process.env.NODE_ENV === 'production',
             sameSite: 'lax',
-            httpOnly: false
+            httpOnly: false,
+            path: '/'
           })
         } catch {
           // The `remove` method was called from a Server Component.

@@ -1,9 +1,7 @@
 import type { NextRequest } from "next/server"
-import { NextResponse } from "next/server"
 import { updateSession } from "@/lib/supabase/middleware"
 
 export async function middleware(request: NextRequest) {
-  // Use the Supabase middleware for proper authentication handling
   return await updateSession(request)
 }
 

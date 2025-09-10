@@ -306,9 +306,9 @@ export async function OPTIONS(request: NextRequest) {
   return new NextResponse(null, {
     status: 200,
     headers: {
-      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Origin': process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000',
       'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization, Cookie, X-Requested-With',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization, Cookie',
       'Access-Control-Allow-Credentials': 'true',
     },
   })
