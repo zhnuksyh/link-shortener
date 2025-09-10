@@ -14,10 +14,13 @@ export async function createClient() {
   return createServerClient(supabaseUrl, supabaseAnonKey, {
     cookies: {
       get(name: string) {
-        return cookieStore.get(name)?.value
+        const cookie = cookieStore.get(name)
+        console.log(`Server get cookie ${name}:`, { hasValue: !!cookie?.value, value: cookie?.value?.substring(0, 20) + '...' })
+        return cookie?.value
       },
       set(name: string, value: string, options: any) {
         try {
+          console.log(`Server set cookie ${name}:`, { hasValue: !!value, value: value?.substring(0, 20) + '...' })
           cookieStore.set(name, value, {
             ...options,
             secure: process.env.NODE_ENV === 'production',
@@ -33,6 +36,7 @@ export async function createClient() {
       },
       remove(name: string, options: any) {
         try {
+          console.log(`Server remove cookie ${name}`)
           cookieStore.set(name, '', { 
             ...options, 
             maxAge: 0,

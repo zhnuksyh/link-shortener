@@ -280,17 +280,29 @@ export async function GET(request: NextRequest) {
   try {
     const supabase = await createClient()
     
+    // Debug: Log cookies and headers
+    console.log('API GET - Cookies:', request.cookies.getAll().map(c => ({ name: c.name, hasValue: !!c.value })))
+    console.log('API GET - Cookie header:', request.headers.get('cookie'))
+    
     // Get the authenticated user
     const {
       data: { user },
       error: authError,
     } = await supabase.auth.getUser()
 
+    console.log('API GET - Auth result:', { hasUser: !!user, error: authError?.message })
+
     if (authError || !user) {
-      return NextResponse.json({ 
+      console.log('API GET - Unauthorized:', { authError: authError?.message, hasUser: !!user })
+      const response = NextResponse.json({ 
         error: "Unauthorized",
         details: authError?.message || "No user found in session"
       }, { status: 401 })
+      
+      // Add CORS headers
+      response.headers.set('Access-Control-Allow-Origin', request.headers.get('origin') || '*')
+      response.headers.set('Access-Control-Allow-Credentials', 'true')
+      return response
     }
     
     // Process the get links request with the authenticated user
@@ -303,13 +315,25 @@ export async function GET(request: NextRequest) {
 
 // Handle preflight requests
 export async function OPTIONS(request: NextRequest) {
+  const origin = request.headers.get('origin')
+  const allowedOrigins = [
+    'http://localhost:3000',
+    'http://localhost:3001',
+    process.env.NEXT_PUBLIC_SITE_URL,
+    'https://knuckle-link-rgmj0a3ja-zahin-ukasyahs-projects.vercel.app',
+    'https://knuckle-link-nmopvxmqs-zahin-ukasyahs-projects.vercel.app'
+  ].filter(Boolean)
+
+  const corsOrigin = allowedOrigins.includes(origin) ? origin : allowedOrigins[0]
+
   return new NextResponse(null, {
     status: 200,
     headers: {
-      'Access-Control-Allow-Origin': process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000',
+      'Access-Control-Allow-Origin': corsOrigin || '*',
       'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization, Cookie',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization, Cookie, X-Requested-With',
       'Access-Control-Allow-Credentials': 'true',
+      'Access-Control-Max-Age': '86400',
     },
   })
 }

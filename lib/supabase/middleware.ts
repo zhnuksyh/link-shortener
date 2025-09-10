@@ -12,12 +12,9 @@ export async function updateSession(request: NextRequest) {
     {
       cookies: {
         getAll() {
-          const cookies = request.cookies.getAll()
-          console.log('Middleware getAll cookies:', cookies.map(c => ({ name: c.name, hasValue: !!c.value })))
-          return cookies
+          return request.cookies.getAll()
         },
         setAll(cookiesToSet) {
-          console.log('Middleware setting cookies:', cookiesToSet.map(c => ({ name: c.name, hasValue: !!c.value })))
           cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
           supabaseResponse = NextResponse.next({
             request,
@@ -44,16 +41,7 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
   
-  console.log('Middleware auth check:', {
-    path: request.nextUrl.pathname,
-    hasUser: !!user,
-    userEmail: user?.email,
-    cookies: request.cookies.getAll().map(c => ({ name: c.name, hasValue: !!c.value })),
-    rawCookieHeader: request.headers.get('cookie'),
-    allCookies: request.cookies.getAll()
-  })
 
-  // Temporarily allow dashboard access for debugging
   if (
     !user &&
     !request.nextUrl.pathname.startsWith("/auth") &&
@@ -62,7 +50,9 @@ export async function updateSession(request: NextRequest) {
     !request.nextUrl.pathname.startsWith("/api/") && // Allow access to API routes
     !request.nextUrl.pathname.startsWith("/cookie-inspector") && // Allow access to cookie inspector for testing
     !request.nextUrl.pathname.startsWith("/test-auth") && // Allow access to test auth for testing
-    request.nextUrl.pathname !== "/dashboard" // Temporarily allow dashboard access
+    !request.nextUrl.pathname.includes("site.webmanifest") && // Allow access to manifest
+    !request.nextUrl.pathname.includes("favicon") && // Allow access to favicon
+    !request.nextUrl.pathname.includes("_next") // Allow access to Next.js assets
   ) {
     // no user, potentially respond by redirecting the user to the login page
     const url = request.nextUrl.clone()
