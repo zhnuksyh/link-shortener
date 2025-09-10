@@ -63,8 +63,7 @@ export async function updateSession(request: NextRequest) {
     !request.nextUrl.pathname.startsWith("/test-auth") && // Allow access to test auth for testing
     !request.nextUrl.pathname.includes("site.webmanifest") && // Allow access to manifest
     !request.nextUrl.pathname.includes("favicon") && // Allow access to favicon
-    !request.nextUrl.pathname.includes("_next") && // Allow access to Next.js assets
-    request.nextUrl.pathname !== "/dashboard" // Temporarily allow dashboard access for testing
+    !request.nextUrl.pathname.includes("_next") // Allow access to Next.js assets
   ) {
     // no user, potentially respond by redirecting the user to the login page
     const url = request.nextUrl.clone()

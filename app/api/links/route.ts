@@ -255,21 +255,43 @@ export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient()
     
+    // Debug: Log cookies and headers
+    console.log('API POST - Cookies:', request.cookies.getAll().map(c => ({ name: c.name, hasValue: !!c.value })))
+    console.log('API POST - Cookie header:', request.headers.get('cookie'))
+    
     // Get the authenticated user
     const {
       data: { user },
       error: authError,
     } = await supabase.auth.getUser()
 
+    console.log('API POST - Auth result:', { hasUser: !!user, error: authError?.message })
+
     if (authError || !user) {
-      return NextResponse.json({ 
+      console.log('API POST - Unauthorized:', { authError: authError?.message, hasUser: !!user })
+      
+      // Don't remove cookies on 401 - just return the error
+      const response = NextResponse.json({ 
         error: "Unauthorized",
         details: authError?.message || "No user found in session"
       }, { status: 401 })
+      
+      // Add CORS headers
+      response.headers.set('Access-Control-Allow-Origin', request.headers.get('origin') || '*')
+      response.headers.set('Access-Control-Allow-Credentials', 'true')
+      return response
     }
     
     // Process the links request with the authenticated user
-    return await processLinksRequest(request, user, supabase)
+    const result = await processLinksRequest(request, user, supabase)
+    
+    // Add CORS headers to successful response
+    if (result instanceof NextResponse) {
+      result.headers.set('Access-Control-Allow-Origin', request.headers.get('origin') || '*')
+      result.headers.set('Access-Control-Allow-Credentials', 'true')
+    }
+    
+    return result
   } catch (error) {
     console.error("API error:", error)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
@@ -294,6 +316,8 @@ export async function GET(request: NextRequest) {
 
     if (authError || !user) {
       console.log('API GET - Unauthorized:', { authError: authError?.message, hasUser: !!user })
+      
+      // Don't remove cookies on 401 - just return the error
       const response = NextResponse.json({ 
         error: "Unauthorized",
         details: authError?.message || "No user found in session"
@@ -306,7 +330,15 @@ export async function GET(request: NextRequest) {
     }
     
     // Process the get links request with the authenticated user
-    return await processGetLinksRequest(request, user, supabase)
+    const result = await processGetLinksRequest(request, user, supabase)
+    
+    // Add CORS headers to successful response
+    if (result instanceof NextResponse) {
+      result.headers.set('Access-Control-Allow-Origin', request.headers.get('origin') || '*')
+      result.headers.set('Access-Control-Allow-Credentials', 'true')
+    }
+    
+    return result
   } catch (error) {
     console.error("API error:", error)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
