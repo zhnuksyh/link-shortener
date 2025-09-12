@@ -33,7 +33,9 @@ export function UrlShortenerForm({
 
     try {
       // Use different endpoints based on authentication status
-      const endpoint = isAuthenticated ? "/api/links" : "/api/shorten";
+      const endpoint = isAuthenticated
+        ? "/api/links-manual-auth"
+        : "/api/shorten";
 
       const response = await fetch(endpoint, {
         method: "POST",

@@ -83,27 +83,36 @@ export default function DashboardPage() {
   const fetchLinks = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch("/api/links", {
+      console.log("Dashboard: Fetching links with manual auth API");
+
+      const response = await fetch("/api/links-manual-auth", {
         credentials: "include", // Ensure cookies are sent with the request
       });
 
+      console.log("Dashboard: API response status:", response.status);
+
       if (!response.ok) {
-        throw new Error("Failed to fetch links");
+        const errorData = await response.json();
+        console.error("Dashboard: API error:", errorData);
+        throw new Error(
+          `Failed to fetch links: ${errorData.error || "Unknown error"}`
+        );
       }
 
-      const data: GetLinksResponse = await response.json();
-      setLinks(data.links);
+      const data: Link[] = await response.json();
+      console.log("Dashboard: Successfully fetched links:", data.length);
+
+      setLinks(data);
 
       // Calculate stats
-      const activeLinks = data.links.filter(
-        (link) => link.isActive === true
-      ).length;
+      const activeLinks = data.filter((link) => link.isActive === true).length;
 
       setStats({
-        totalLinks: data.links.length,
+        totalLinks: data.length,
         activeLinks,
       });
     } catch (error) {
+      console.error("Dashboard: Error fetching links:", error);
       toast({
         title: "Error",
         description: "Failed to fetch your links",
