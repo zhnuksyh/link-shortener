@@ -14,11 +14,20 @@ export async function parseJWTFromCookies(request?: NextRequest): Promise<Parsed
   try {
     const cookieStore = await cookies()
     
-    // Get the auth token cookie
-    const authTokenCookie = cookieStore.get('sb-foddnmiritvmozknnwsg-auth-token')
+    // Get the auth token cookie - try both cookie store and request
+    let authTokenCookie = cookieStore.get('sb-foddnmiritvmozknnwsg-auth-token')
+    
+    // If not found in cookie store and request is provided, try request cookies
+    if (!authTokenCookie?.value && request) {
+      authTokenCookie = request.cookies.get('sb-foddnmiritvmozknnwsg-auth-token')
+    }
     
     if (!authTokenCookie?.value) {
       console.log('JWT Parser: No auth token cookie found')
+      console.log('JWT Parser: Available cookies:', cookieStore.getAll().map(c => ({ name: c.name, hasValue: !!c.value })))
+      if (request) {
+        console.log('JWT Parser: Request cookies:', request.cookies.getAll().map(c => ({ name: c.name, hasValue: !!c.value })))
+      }
       return null
     }
     
