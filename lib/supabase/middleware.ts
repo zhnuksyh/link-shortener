@@ -10,8 +10,13 @@ export async function updateSession(request: NextRequest) {
   // Try to use the same approach as the server client
   const cookieStore = await cookies()
   
+  // Extract project ID from Supabase URL for proper cookie naming
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+  const projectId = supabaseUrl.split('//')[1]?.split('.')[0] || 'default'
+  const expectedCookieName = `sb-${projectId}-auth-token`
+  
   const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    supabaseUrl,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
@@ -21,6 +26,15 @@ export async function updateSession(request: NextRequest) {
           if (requestCookie?.value) {
             console.log(`Middleware get cookie ${name} from request:`, { hasValue: !!requestCookie.value })
             return requestCookie.value
+          }
+          
+          // If looking for the expected cookie but not found, try the generic name
+          if (name === expectedCookieName) {
+            const genericCookie = request.cookies.get('sb-auth-token')
+            if (genericCookie?.value) {
+              console.log(`Middleware found generic cookie sb-auth-token for ${name}:`, { hasValue: !!genericCookie.value })
+              return genericCookie.value
+            }
           }
           
           // Fallback to cookie store

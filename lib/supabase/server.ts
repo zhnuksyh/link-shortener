@@ -11,6 +11,10 @@ export async function createClient() {
     throw new Error('Missing Supabase environment variables. Please check your .env.local file.')
   }
 
+  // Extract project ID from Supabase URL for proper cookie naming
+  const projectId = supabaseUrl.split('//')[1]?.split('.')[0] || 'default'
+  const expectedCookieName = `sb-${projectId}-auth-token`
+
   return createServerClient(supabaseUrl, supabaseAnonKey, {
     cookies: {
       get(name: string) {
