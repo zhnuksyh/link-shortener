@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server"
+import { createSafeClient } from "@/lib/supabase/server-safe"
 import { isValidUrl, normalizeUrl } from "@/lib/utils/url-validator"
 import { createTinyURLShortLink } from "@/lib/services/tinyurl"
 import { type NextRequest, NextResponse } from "next/server"
@@ -253,7 +253,7 @@ async function processGetLinksRequest(request: NextRequest, user: User, supabase
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createClient()
+    const supabase = await createSafeClient()
     
     // Debug: Log cookies and headers
     console.log('API POST - Cookies:', request.cookies.getAll().map(c => ({ name: c.name, hasValue: !!c.value })))
@@ -300,7 +300,7 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
-    const supabase = await createClient()
+    const supabase = await createSafeClient()
     
     // Debug: Log cookies and headers
     console.log('API GET - Cookies:', request.cookies.getAll().map(c => ({ name: c.name, hasValue: !!c.value })))
@@ -326,6 +326,9 @@ export async function GET(request: NextRequest) {
       // Add CORS headers
       response.headers.set('Access-Control-Allow-Origin', request.headers.get('origin') || '*')
       response.headers.set('Access-Control-Allow-Credentials', 'true')
+      
+      // IMPORTANT: Don't let Supabase remove cookies on 401
+      // The cookies are valid, just the parsing failed
       return response
     }
     
