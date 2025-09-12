@@ -1,4 +1,4 @@
-import { createSafeClient } from "@/lib/supabase/server-safe"
+import { createClient } from "@/lib/supabase/server"
 import { isValidUrl, normalizeUrl } from "@/lib/utils/url-validator"
 import { createTinyURLShortLink } from "@/lib/services/tinyurl"
 import { type NextRequest, NextResponse } from "next/server"
@@ -253,11 +253,7 @@ async function processGetLinksRequest(request: NextRequest, user: User, supabase
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createSafeClient()
-    
-    // Debug: Log cookies and headers
-    console.log('API POST - Cookies:', request.cookies.getAll().map(c => ({ name: c.name, hasValue: !!c.value })))
-    console.log('API POST - Cookie header:', request.headers.get('cookie'))
+    const supabase = await createClient()
     
     // Get the authenticated user
     const {
@@ -265,33 +261,15 @@ export async function POST(request: NextRequest) {
       error: authError,
     } = await supabase.auth.getUser()
 
-    console.log('API POST - Auth result:', { hasUser: !!user, error: authError?.message })
-
     if (authError || !user) {
-      console.log('API POST - Unauthorized:', { authError: authError?.message, hasUser: !!user })
-      
-      // Don't remove cookies on 401 - just return the error
-      const response = NextResponse.json({ 
+      return NextResponse.json({ 
         error: "Unauthorized",
         details: authError?.message || "No user found in session"
       }, { status: 401 })
-      
-      // Add CORS headers
-      response.headers.set('Access-Control-Allow-Origin', request.headers.get('origin') || '*')
-      response.headers.set('Access-Control-Allow-Credentials', 'true')
-      return response
     }
     
     // Process the links request with the authenticated user
-    const result = await processLinksRequest(request, user, supabase)
-    
-    // Add CORS headers to successful response
-    if (result instanceof NextResponse) {
-      result.headers.set('Access-Control-Allow-Origin', request.headers.get('origin') || '*')
-      result.headers.set('Access-Control-Allow-Credentials', 'true')
-    }
-    
-    return result
+    return await processLinksRequest(request, user, supabase)
   } catch (error) {
     console.error("API error:", error)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
@@ -300,11 +278,7 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
-    const supabase = await createSafeClient()
-    
-    // Debug: Log cookies and headers
-    console.log('API GET - Cookies:', request.cookies.getAll().map(c => ({ name: c.name, hasValue: !!c.value })))
-    console.log('API GET - Cookie header:', request.headers.get('cookie'))
+    const supabase = await createClient()
     
     // Get the authenticated user
     const {
@@ -312,36 +286,15 @@ export async function GET(request: NextRequest) {
       error: authError,
     } = await supabase.auth.getUser()
 
-    console.log('API GET - Auth result:', { hasUser: !!user, error: authError?.message })
-
     if (authError || !user) {
-      console.log('API GET - Unauthorized:', { authError: authError?.message, hasUser: !!user })
-      
-      // Don't remove cookies on 401 - just return the error
-      const response = NextResponse.json({ 
+      return NextResponse.json({ 
         error: "Unauthorized",
         details: authError?.message || "No user found in session"
       }, { status: 401 })
-      
-      // Add CORS headers
-      response.headers.set('Access-Control-Allow-Origin', request.headers.get('origin') || '*')
-      response.headers.set('Access-Control-Allow-Credentials', 'true')
-      
-      // IMPORTANT: Don't let Supabase remove cookies on 401
-      // The cookies are valid, just the parsing failed
-      return response
     }
     
     // Process the get links request with the authenticated user
-    const result = await processGetLinksRequest(request, user, supabase)
-    
-    // Add CORS headers to successful response
-    if (result instanceof NextResponse) {
-      result.headers.set('Access-Control-Allow-Origin', request.headers.get('origin') || '*')
-      result.headers.set('Access-Control-Allow-Credentials', 'true')
-    }
-    
-    return result
+    return await processGetLinksRequest(request, user, supabase)
   } catch (error) {
     console.error("API error:", error)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
@@ -350,25 +303,13 @@ export async function GET(request: NextRequest) {
 
 // Handle preflight requests
 export async function OPTIONS(request: NextRequest) {
-  const origin = request.headers.get('origin')
-  const allowedOrigins = [
-    'http://localhost:3000',
-    'http://localhost:3001',
-    process.env.NEXT_PUBLIC_SITE_URL,
-    'https://knuckle-link-rgmj0a3ja-zahin-ukasyahs-projects.vercel.app',
-    'https://knuckle-link-nmopvxmqs-zahin-ukasyahs-projects.vercel.app'
-  ].filter(Boolean)
-
-  const corsOrigin = allowedOrigins.includes(origin) ? origin : allowedOrigins[0]
-
   return new NextResponse(null, {
     status: 200,
     headers: {
-      'Access-Control-Allow-Origin': corsOrigin || '*',
+      'Access-Control-Allow-Origin': process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000',
       'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization, Cookie, X-Requested-With',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization, Cookie',
       'Access-Control-Allow-Credentials': 'true',
-      'Access-Control-Max-Age': '86400',
     },
   })
 }

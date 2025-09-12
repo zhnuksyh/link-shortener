@@ -26,93 +26,47 @@ export default function DashboardPage() {
 
   useEffect(() => {
     const checkUser = async () => {
-      try {
-        const {
-          data: { user },
-          error,
-        } = await supabase.auth.getUser();
+      const {
+        data: { user },
+        error,
+      } = await supabase.auth.getUser();
 
-        console.log("Dashboard auth check:", {
-          hasUser: !!user,
-          error: error?.message,
-        });
-
-        if (error || !user) {
-          console.log("No user found, redirecting to login");
-          router.push("/auth/login");
-          return;
-        }
-
-        setUser(user);
-        await fetchLinks();
-      } catch (error) {
-        console.error("Auth check error:", error);
-        router.push("/auth/login");
-      }
-    };
-
-    // Initial check
-    checkUser();
-
-    // Listen for auth state changes
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log("Auth state changed:", event, session?.user?.email);
-
-      if (event === "SIGNED_OUT" || !session) {
-        console.log("User signed out, redirecting to login");
+      if (error || !user) {
         router.push("/auth/login");
         return;
       }
 
-      if (event === "SIGNED_IN" || event === "TOKEN_REFRESHED") {
-        console.log("User authenticated, updating state");
-        setUser(session.user);
-        if (event === "SIGNED_IN") {
-          await fetchLinks();
-        }
-      }
-    });
-
-    return () => {
-      subscription.unsubscribe();
+      setUser(user);
+      await fetchLinks();
     };
+
+    checkUser();
   }, []);
 
   const fetchLinks = async () => {
     try {
       setIsLoading(true);
-      console.log("Dashboard: Fetching links with manual auth API");
-
-      const response = await fetch("/api/links-manual-auth", {
+      const response = await fetch("/api/links", {
         credentials: "include", // Ensure cookies are sent with the request
       });
 
-      console.log("Dashboard: API response status:", response.status);
-
       if (!response.ok) {
-        const errorData = await response.json();
-        console.error("Dashboard: API error:", errorData);
-        throw new Error(
-          `Failed to fetch links: ${errorData.error || "Unknown error"}`
-        );
+        throw new Error("Failed to fetch links");
       }
 
-      const data: Link[] = await response.json();
-      console.log("Dashboard: Successfully fetched links:", data.length);
-
-      setLinks(data);
+      const data: GetLinksResponse = await response.json();
+      setLinks(data.links);
 
       // Calculate stats
-      const activeLinks = data.filter((link) => link.isActive === true).length;
+      const activeLinks = data.links.filter(
+        (link) => link.isActive === true
+      ).length;
 
       setStats({
-        totalLinks: data.length,
+        totalLinks: data.links.length,
         activeLinks,
       });
     } catch (error) {
-      console.error("Dashboard: Error fetching links:", error);
       toast({
         title: "Error",
         description: "Failed to fetch your links",

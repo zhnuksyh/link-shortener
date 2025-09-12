@@ -1,85 +1,29 @@
 import { createServerClient } from "@supabase/ssr"
 import { NextResponse, type NextRequest } from "next/server"
-import { cookies } from "next/headers"
 
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
     request,
   })
 
-  // Try to use the same approach as the server client
-  const cookieStore = await cookies()
-  
-  // Extract project ID from Supabase URL for proper cookie naming
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-  const projectId = supabaseUrl.split('//')[1]?.split('.')[0] || 'default'
-  const expectedCookieName = `sb-${projectId}-auth-token`
-  
   const supabase = createServerClient(
-    supabaseUrl,
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        get(name: string) {
-          // First try the request cookies
-          const requestCookie = request.cookies.get(name)
-          if (requestCookie?.value) {
-            console.log(`Middleware get cookie ${name} from request:`, { hasValue: !!requestCookie.value })
-            return requestCookie.value
-          }
-          
-          // If looking for the expected cookie but not found, try the generic name
-          if (name === expectedCookieName) {
-            const genericCookie = request.cookies.get('sb-auth-token')
-            if (genericCookie?.value) {
-              console.log(`Middleware found generic cookie sb-auth-token for ${name}:`, { hasValue: !!genericCookie.value })
-              return genericCookie.value
-            }
-          }
-          
-          // Fallback to cookie store
-          const cookie = cookieStore.get(name)
-          console.log(`Middleware get cookie ${name} from store:`, { hasValue: !!cookie?.value })
-          return cookie?.value
+        getAll() {
+          return request.cookies.getAll()
         },
-        set(name: string, value: string, options: any) {
-          console.log(`Middleware set cookie ${name}:`, { hasValue: !!value })
-          try {
-            cookieStore.set(name, value, {
-              ...options,
-              secure: process.env.NODE_ENV === 'production',
-              sameSite: 'lax',
-              httpOnly: false,
-              path: '/',
-              domain: process.env.NODE_ENV === 'production' ? undefined : undefined
-            })
-          } catch {
-            // Ignore if called from middleware
-          }
-        },
-        remove(name: string, options: any) {
-          console.log(`Middleware remove cookie ${name}`)
-          try {
-            cookieStore.set(name, '', { 
-              ...options, 
-              maxAge: 0,
-              secure: process.env.NODE_ENV === 'production',
-              sameSite: 'lax',
-              httpOnly: false,
-              path: '/',
-              domain: process.env.NODE_ENV === 'production' ? undefined : undefined
-            })
-          } catch {
-            // Ignore if called from middleware
-          }
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
+          supabaseResponse = NextResponse.next({
+            request,
+          })
+          cookiesToSet.forEach(({ name, value, options }) => {
+            supabaseResponse.cookies.set(name, value, options)
+          })
         },
       },
-      auth: {
-        persistSession: false, // Disable session persistence in middleware
-        autoRefreshToken: false, // Disable auto refresh in middleware
-        detectSessionInUrl: false,
-        flowType: 'pkce'
-      }
     },
   )
 
@@ -89,28 +33,7 @@ export async function updateSession(request: NextRequest) {
 
   const {
     data: { user },
-    error: userError
   } = await supabase.auth.getUser()
-  
-  // Debug logging for dashboard requests
-  if (request.nextUrl.pathname === "/dashboard") {
-    console.log('Dashboard request - Middleware debug:', {
-      path: request.nextUrl.pathname,
-      hasUser: !!user,
-      userEmail: user?.email,
-      userError: userError?.message,
-      cookies: request.cookies.getAll().map(c => ({ name: c.name, hasValue: !!c.value })),
-      cookieHeader: request.headers.get('cookie')
-    })
-    
-    // Try to get session as well
-    const { data: { session }, error: sessionError } = await supabase.auth.getSession()
-    console.log('Dashboard request - Session debug:', {
-      hasSession: !!session,
-      sessionError: sessionError?.message,
-      sessionUser: session?.user?.email
-    })
-  }
 
   if (
     !user &&
@@ -119,10 +42,7 @@ export async function updateSession(request: NextRequest) {
     !request.nextUrl.pathname.startsWith("/s/") && // Allow access to shortened links
     !request.nextUrl.pathname.startsWith("/api/") && // Allow access to API routes
     !request.nextUrl.pathname.startsWith("/cookie-inspector") && // Allow access to cookie inspector for testing
-    !request.nextUrl.pathname.startsWith("/test-auth") && // Allow access to test auth for testing
-    !request.nextUrl.pathname.includes("site.webmanifest") && // Allow access to manifest
-    !request.nextUrl.pathname.includes("favicon") && // Allow access to favicon
-    !request.nextUrl.pathname.includes("_next") // Allow access to Next.js assets
+    !request.nextUrl.pathname.startsWith("/test-auth") // Allow access to test auth for testing
   ) {
     // no user, potentially respond by redirecting the user to the login page
     const url = request.nextUrl.clone()
